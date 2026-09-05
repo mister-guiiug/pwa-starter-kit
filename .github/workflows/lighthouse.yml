@@ -1,0 +1,14 @@
+# Lighthouse sur chaque PR. Seuils dans `.lighthouserc.json`.
+name: Lighthouse
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  lighthouse:
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-lighthouse.yml@v4
