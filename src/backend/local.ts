@@ -28,17 +28,23 @@ export const notesStore = createVersionedStore<NotesSnapshot>({
   migrations: {},
 });
 
+/**
+ * Le magasin versionné est synchrone ; le port ne l'est pas. L'adaptateur
+ * local se contente donc d'envelopper — il ne gagne rien à l'être, mais le
+ * port doit rester implémentable par un adaptateur distant, et c'est lui qui
+ * commande.
+ */
 export function createLocalBackend(): Backend {
   return {
     notes: {
-      load: () => notesStore.load(),
-      save: snapshot => {
+      load: async () => notesStore.load(),
+      save: async snapshot => {
         notesStore.save(snapshot);
       },
-      clear: () => {
+      clear: async () => {
         notesStore.clear();
       },
-      export: () => notesStore.export(),
+      export: async () => notesStore.export(),
     },
   };
 }

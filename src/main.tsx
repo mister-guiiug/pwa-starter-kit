@@ -7,7 +7,9 @@ import {
 import { ThemeProvider } from '@mister-guiiug/dev-pwa-config/react/theme-provider';
 import { ToastProvider } from '@mister-guiiug/dev-pwa-config/react/toast';
 import { VersionProvider } from '@mister-guiiug/dev-pwa-config/react/version';
+import { AuthProvider } from '@mister-guiiug/dev-pwa-config/react/auth-provider';
 import { I18nProvider } from './i18n/index.ts';
+import { authAdapter } from './auth/index.ts';
 import { env } from './app/config/env.ts';
 import { App } from './App.tsx';
 import './index.css';
@@ -50,9 +52,15 @@ createRoot(container).render(
         themeColor={{ light: '#f7f8fa', dark: '#0f1115' }}
       >
         <I18nProvider>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
+          {/* L'adaptateur est `null` tant qu'aucun backend distant n'est
+              configuré : le fournisseur se met alors en mode local, l'état
+              reste « déconnecté », et les actions rendent une erreur nommée
+              plutôt que d'échouer sur un client absent. */}
+          <AuthProvider adapter={authAdapter()}>
+            <ToastProvider>
+              <App />
+            </ToastProvider>
+          </AuthProvider>
         </I18nProvider>
       </ThemeProvider>
     </VersionProvider>

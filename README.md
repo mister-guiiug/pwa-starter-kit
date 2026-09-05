@@ -74,6 +74,29 @@ Chaque pièce est là parce que son absence a coûté quelque chose de mesuré :
 - **`components.css`** est importé : sans lui, les composants du socle sont
   nus, ça compile, les tests passent, et l'écran est cassé.
 
+## Supabase : une variante, pas un fork
+
+Le backend distant n'est **pas** une branche séparée. C'est un adaptateur qui
+s'active quand `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` sont présentes,
+et l'application reste entière sans elles. Un fork aurait deux CI, deux
+historiques, et divergerait en quelques semaines.
+
+Ce que la variante apporte, tout est déjà là :
+
+| Pièce                                | Ce qu'elle règle                                              |
+| ------------------------------------ | ------------------------------------------------------------- |
+| `supabase/migrations/0001…0003`      | `profiles`, rôles, RLS **deny-by-default** avec double verrou |
+| `supabase/tests/rls.test.sql`        | onze assertions pgTAP : deux comptes ne se voient pas         |
+| `src/backend/supabase.ts`            | l'adaptateur du seul port `notes` — les autres restent locaux |
+| `src/auth/`, `src/features/account/` | le fournisseur, le formulaire et `useRole()`                  |
+| `.github/workflows/supabase-*.yml`   | migrations, et le keep-alive anti-pause du plan Free          |
+
+Pour l'activer : poser les deux variables dans **`vars`** du dépôt (jamais dans
+`secrets` — Vite les copie dans le bundle), les trois secrets `SUPABASE_*` pour
+les migrations, puis appliquer `supabase/keep-alive.sql`. Sans la table
+`keep_alive`, le ping du keep-alive répond 404 **en silence**, et le projet
+s'endort quand même.
+
 ## Les décisions
 
 Elles sont écrites, avec leur contexte mesuré et ce qu'elles écartent :

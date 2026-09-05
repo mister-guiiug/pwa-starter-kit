@@ -5,7 +5,7 @@ import {
   Routes,
   useLocation,
 } from 'react-router-dom';
-import { Home, Info, Settings } from 'lucide-react';
+import { Home, Info, Settings, UserRound } from 'lucide-react';
 import { AppHeader } from '@mister-guiiug/dev-pwa-config/react/app-header';
 import { PageContainer } from '@mister-guiiug/dev-pwa-config/react/page-container';
 import { BottomNav } from '@mister-guiiug/dev-pwa-config/react/bottom-nav';
@@ -20,6 +20,7 @@ import { REPO_URL } from './app/links.ts';
 import { HomeScreen } from './features/home/HomeScreen.tsx';
 import { SettingsScreen } from './features/settings/SettingsScreen.tsx';
 import { AboutScreen } from './features/about/AboutScreen.tsx';
+import { AccountScreen } from './features/account/AccountScreen.tsx';
 
 /**
  * LE CADRE : en-tête, contenu borné, barre basse, pied de page.
@@ -51,6 +52,11 @@ function Shell() {
       icon: <Settings aria-hidden="true" />,
     },
     {
+      href: '/compte',
+      label: t('nav.account'),
+      icon: <UserRound aria-hidden="true" />,
+    },
+    {
       href: '/a-propos',
       label: t('nav.about'),
       icon: <Info aria-hidden="true" />,
@@ -60,6 +66,7 @@ function Shell() {
   const titles: Record<string, string> = {
     '/': t('home.title'),
     '/reglages': t('settings.title'),
+    '/compte': t('account.title'),
     '/a-propos': t('about.title'),
   };
 
@@ -85,6 +92,7 @@ function Shell() {
         <Routes>
           <Route path="/" element={<HomeScreen />} />
           <Route path="/reglages" element={<SettingsScreen />} />
+          <Route path="/compte" element={<AccountScreen />} />
           <Route path="/a-propos" element={<AboutScreen />} />
           {/* Le repli de route rend l'accueil ; le repli de SERVEUR est le
               `404.html` posé par `spaFallbackPlugin`. Les deux sont

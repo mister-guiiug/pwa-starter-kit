@@ -27,10 +27,12 @@ const fr = {
   nav: {
     home: 'Accueil',
     settings: 'Réglages',
+    account: 'Compte',
     about: 'À propos',
   },
   home: {
     title: 'Notes',
+    loading: 'Chargement des notes',
     empty: 'Aucune note pour le moment.',
     emptyHint: 'La première note montrera la persistance versionnée.',
     add: 'Ajouter',
@@ -56,6 +58,15 @@ const fr = {
     backend: 'Source de données',
     backendLocal: 'Cet appareil seulement',
   },
+  account: {
+    title: 'Compte',
+    localMode: 'Mode local',
+    localModeBody:
+      "Aucun backend n'est configuré : tout reste sur cet appareil. L'écran est là quand même — un écran masqué par une condition finit par diverger de celui qui s'affiche.",
+    signOut: 'Se déconnecter',
+    admin: 'Administration',
+  },
+
   about: {
     title: 'À propos',
     what: "Ce dépôt est le point de départ des applications de la famille. Il n'a pas de métier : il a le cadre.",
@@ -71,10 +82,12 @@ const en: typeof fr = {
   nav: {
     home: 'Home',
     settings: 'Settings',
+    account: 'Account',
     about: 'About',
   },
   home: {
     title: 'Notes',
+    loading: 'Loading notes',
     empty: 'No notes yet.',
     emptyHint: 'The first note will show versioned persistence at work.',
     add: 'Add',
@@ -100,6 +113,15 @@ const en: typeof fr = {
     backend: 'Data source',
     backendLocal: 'This device only',
   },
+  account: {
+    title: 'Account',
+    localMode: 'Local mode',
+    localModeBody:
+      'No backend is configured: everything stays on this device. The screen is still here — a screen hidden behind a condition drifts away from the one that shows.',
+    signOut: 'Sign out',
+    admin: 'Admin',
+  },
+
   about: {
     title: 'About',
     what: 'This repository is the starting point for the family applications. It has no domain: it has the frame.',

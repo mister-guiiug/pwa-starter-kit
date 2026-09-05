@@ -26,8 +26,8 @@ export function SettingsScreen() {
   const clear = useNotes(state => state.clear);
   const [confirming, setConfirming] = useState(false);
 
-  const exportNotes = () => {
-    const json = backend.notes.export();
+  const exportNotes = async () => {
+    const json = await backend.notes.export();
     if (json)
       downloadText(json, `notes-${dateSlug()}.json`, 'application/json');
   };
@@ -72,7 +72,7 @@ export function SettingsScreen() {
       <Card>
         <CardHeader title={t('settings.data')} />
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={exportNotes}>
+          <Button variant="outline" onClick={() => void exportNotes()}>
             {t('settings.export')}
           </Button>
           <Button variant="danger" onClick={() => setConfirming(true)}>
@@ -87,7 +87,7 @@ export function SettingsScreen() {
         title={t('settings.resetConfirm')}
         message={t('settings.resetBody')}
         onConfirm={() => {
-          clear();
+          void clear();
           setConfirming(false);
         }}
         onCancel={() => setConfirming(false)}

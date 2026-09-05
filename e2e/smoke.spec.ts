@@ -30,7 +30,7 @@ test.describe('@critical le cadre', () => {
     await expect(page.getByText(texte)).toBeVisible();
   });
 
-  test('la navigation atteint les trois destinations', async ({ page }) => {
+  test('la navigation atteint les quatre destinations', async ({ page }) => {
     await page.goto('/');
 
     await page.getByRole('link', { name: 'Réglages' }).click();
@@ -38,10 +38,24 @@ test.describe('@critical le cadre', () => {
       'Réglages'
     );
 
+    await page.getByRole('link', { name: 'Compte' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Compte');
+
     await page.getByRole('link', { name: 'À propos' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'À propos'
     );
+  });
+
+  test('sans backend, l’écran de compte le DIT au lieu de disparaître', async ({
+    page,
+  }) => {
+    // La propriété que la variante Supabase ne doit pas casser : l'application
+    // reste entière sans configuration. Un écran masqué par une condition
+    // finit par diverger de celui qui s'affiche, et personne ne le voit avant
+    // la mise en service.
+    await page.goto('/compte');
+    await expect(page.getByText('Mode local')).toBeVisible();
   });
 
   test('un lien profond rafraîchi sert l’app, pas la page d’erreur', async ({
