@@ -4,9 +4,15 @@
 # jamais annulé en vol : couper une migration à mi-chemin laisse une base dans
 # un état que personne n'a décrit.
 #
-# Ce dépôt n'a PAS de projet Supabase attaché : sans les secrets, le
-# réutilisable le dit et s'arrête. C'est voulu — le squelette livre les
-# migrations et le workflow, une application les active en posant ses secrets.
+# CONDITIONNÉ À LA VARIABLE QUI ACTIVE DÉJÀ LE BACKEND, et pas seulement aux
+# secrets. Le réutilisable ÉCHOUE quand ses trois secrets manquent — c'est le
+# bon comportement pour une application qui a un projet, et le mauvais pour un
+# dépôt qui n'en a pas : un workflow rouge à chaque poussée est exactement le
+# bruit qui fait cesser de lire la CI.
+#
+# `vars.VITE_SUPABASE_URL` est la même valeur qui fait basculer l'application
+# sur le backend distant. Une seule chose à poser pour tout activer, et rien à
+# se rappeler : le squelette saute la migration, une application la reçoit.
 name: Supabase migrations
 
 on:
@@ -20,6 +26,7 @@ permissions:
 
 jobs:
   migrate:
+    if: vars.VITE_SUPABASE_URL != ''
     uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-supabase-migrate.yml@v4
     secrets:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
