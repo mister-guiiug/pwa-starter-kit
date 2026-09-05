@@ -1,6 +1,7 @@
 import { createBackendSelector } from '@mister-guiiug/dev-pwa-config/backend';
 import { createLogger } from '@mister-guiiug/dev-pwa-config/logger';
 import { createLocalBackend } from './local.ts';
+import { createSupabaseNotes } from './supabase.ts';
 import type { Backend } from './ports.ts';
 
 const log = createLogger('backend');
@@ -32,7 +33,18 @@ const log = createLogger('backend');
  */
 const selectBackend = createBackendSelector<Backend>({
   fallback: createLocalBackend,
-  backends: {},
+  backends: {
+    supabase: {
+      // Les deux clés que le socle nomme lui-même (`SUPABASE_ENV_KEYS`).
+      // Absente l'une des deux, ce backend n'est pas retenu et l'application
+      // s'ouvre en local — sans erreur, et en le disant dans les réglages.
+      requires: ['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY'],
+      // Un objet PARTIEL : seul le port `notes` est distant. Tout ce qui n'est
+      // pas nommé ici reste servi par le repli. C'est ce qui permet de migrer
+      // une application déjà en production, port par port.
+      create: () => ({ notes: createSupabaseNotes() }),
+    },
+  },
   onFallback: ({ kind, missing, error }) => {
     log.warn('repli sur le backend local', { kind, missing, error });
   },
@@ -56,3 +68,4 @@ export const coverage = {
 };
 
 export type { Backend, Note, NotesSnapshot } from './ports.ts';
+export { supabase } from './supabase.ts';

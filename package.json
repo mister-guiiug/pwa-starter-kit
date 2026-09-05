@@ -26,7 +26,8 @@
     "prepare": "husky || true"
   },
   "bundleBudget": {
-    "totalGzipKb": 200
+    "totalGzipKb": 210,
+    "mainChunkKb": 420
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
@@ -56,6 +57,7 @@
     "vitest": "^4.0.0"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.115.0",
     "lucide-react": "^1.17.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

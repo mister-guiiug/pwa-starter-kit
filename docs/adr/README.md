@@ -25,6 +25,7 @@ personne à la rediscuter.
 | [0004](./0004-backend.md)                       | Un port, un repli local, une migration port par port             |
 | [0005](./0005-mise-a-jour-du-service-worker.md) | `prompt`, jamais `autoUpdate`                                    |
 | [0006](./0006-observabilite.md)                 | Journal toujours, Sentry seulement s'il est configuré            |
+| [0007](./0007-comptes-et-droits.md)             | La base décide des droits ; l'interface se contente d'obéir      |
 
 ## Quand une application s'écarte
 

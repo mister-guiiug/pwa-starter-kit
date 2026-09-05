@@ -29,13 +29,26 @@ export type NotesSnapshot = z.infer<typeof notesSchema>;
  * faire. C'est ce qui permet de remplacer les adaptateurs UN PAR UN — d'avoir
  * Supabase pour les notes et le local pour le reste, en production, sans big
  * bang. `composeBackend` du socle existe pour cette manœuvre exacte.
+ *
+ * TOUT EST ASYNCHRONE, MÊME CE QUI NE L'EST PAS EN LOCAL.
+ *
+ * La première version de ce port était synchrone : `load(): NotesSnapshot`.
+ * C'était l'implémentation locale — `localStorage`, donc synchrone — dessinée
+ * en interface. Elle rendait le port **inimplémentable par un adaptateur
+ * distant**, ce qui n'est apparu qu'en écrivant celui de Supabase. Un port
+ * dessiné sur une seule implémentation n'est pas un port : c'est cette
+ * implémentation, avec un autre nom.
+ *
+ * Le prix est réel — l'écran doit gérer un état de chargement même en local,
+ * où il n'y en a pas — et il est plus faible que celui de la découverte
+ * tardive : à ce moment-là, ce sont les écrans qu'il faut reprendre.
  */
 export interface NotesRepository {
-  load(): NotesSnapshot;
-  save(snapshot: NotesSnapshot): void;
-  clear(): void;
+  load(): Promise<NotesSnapshot>;
+  save(snapshot: NotesSnapshot): Promise<void>;
+  clear(): Promise<void>;
   /** L'état courant en JSON, pour l'export de l'écran de réglages. */
-  export(): string | null;
+  export(): Promise<string | null>;
 }
 
 export interface Backend {

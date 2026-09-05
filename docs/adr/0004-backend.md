@@ -42,6 +42,22 @@ déploiement (`required-env`) et celui du build.
 Une application à moitié migrée doit pouvoir le dire. C'est le sens de
 `backendCoverage` : quels ports sont distants, lesquels sont restés locaux.
 
+## Ce que l'écriture de l'adaptateur distant a appris
+
+La première version du port était **synchrone** — `load(): NotesSnapshot` —
+parce que l'implémentation locale l'est. Elle était donc **inimplémentable par
+un adaptateur distant**, et cela n'est apparu qu'en écrivant celui de Supabase.
+
+Un port dessiné sur une seule implémentation n'est pas un port : c'est cette
+implémentation, avec un autre nom. Le port est désormais asynchrone de bout en
+bout, l'adaptateur local se contentant d'envelopper. Le prix — un état de
+chargement même là où il n'y en a pas — est plus faible que celui de la
+découverte tardive : à ce moment-là, ce sont les écrans qu'il faut reprendre.
+
+L'écriture est **optimiste, avec reprise** : l'état change d'abord, on écrit
+ensuite, et un échec restaure l'état d'avant en portant l'erreur à l'écran. Une
+note affichée que la base a refusée est le pire des deux mondes.
+
 ## Ce qu'on écarte
 
 **Exiger la configuration au démarrage.** C'est la règle inverse, et elle

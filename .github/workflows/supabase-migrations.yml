@@ -1,0 +1,27 @@
+# Migrations Supabase, déléguées au workflow réutilisable de la famille.
+#
+# Déclenché par un changement de `supabase/migrations/**` sur `main`, et
+# jamais annulé en vol : couper une migration à mi-chemin laisse une base dans
+# un état que personne n'a décrit.
+#
+# Ce dépôt n'a PAS de projet Supabase attaché : sans les secrets, le
+# réutilisable le dit et s'arrête. C'est voulu — le squelette livre les
+# migrations et le workflow, une application les active en posant ses secrets.
+name: Supabase migrations
+
+on:
+  push:
+    branches: [main]
+    paths: ['supabase/migrations/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-supabase-migrate.yml@v4
+    secrets:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
