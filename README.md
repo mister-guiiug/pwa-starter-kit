@@ -107,17 +107,31 @@ C'est la seule différence qui compte.
 
 ## Partir de là
 
-1. cloner ou utiliser ce dépôt comme modèle ;
-2. remplacer `pwa-starter-kit` par l'identifiant du nouveau dépôt — il est
-   déclaré **une fois**, dans `src/app/links.ts` et `vite.config.ts` ;
+**Ne clonez pas ce dépôt** — appelez le générateur, qui en tire une archive et
+la met à votre nom :
+
+```bash
+npx github:mister-guiiug/create-lg-pwa-app miss-exemple --publish
+```
+
+[`create-lg-pwa-app`](https://github.com/mister-guiiug/create-lg-pwa-app)
+substitue l'identité partout, écrit le lockfile avec **npm 10** — celle du
+runner, sans quoi la CI rougit au premier push —, fait le premier commit, crée
+le dépôt public et active Pages **par un PUT**, seule forme qui empêche Jekyll
+de republier le README à la place de l'application.
+
+Restent quatre gestes, que le générateur imprime et ne fait pas :
+
+1. `node scripts/apply-rulesets.mjs <id>` depuis le socle, pour protéger la
+   branche ;
+2. inscrire l'application au catalogue du socle par une PR, sans quoi elle
+   n'apparaît pas chez ses sœurs ;
 3. régénérer les icônes (`npm run icons`) depuis un nouveau `favicon.svg` ;
 4. supprimer la fonctionnalité d'exemple (`src/features/home/`) — elle est
-   faite pour ça ;
-5. inscrire l'application au catalogue du socle, sans quoi elle n'apparaît chez
-   ses sœurs ni ne reçoit la protection de branche.
+   faite pour ça.
 
-Ces gestes seront un jour ceux d'un générateur (`create-lg-pwa-app`, chantier 4
-de la feuille de route). En attendant, ils sont courts et écrits.
+À la main, la substitution reste courte : `pwa-starter-kit` n'est déclaré
+qu'**une fois**, dans `src/app/links.ts` et `vite.config.ts`.
 
 ## Licence
 
