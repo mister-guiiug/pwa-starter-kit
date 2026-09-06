@@ -94,7 +94,10 @@ Chaque pièce est là parce que son absence a coûté quelque chose de mesuré :
   changer d'appareil sans compte, et presque aucune app du parc ne l'offrait ;
 - **« Signaler un problème »** dans le pied de page (`AppFooter issues`) :
   le gabarit `bug.yml` du compte, prérempli avec la version, le commit,
-  l'écran et le navigateur — ce qu'un rapport n'a jamais après coup ;
+  l'écran et le navigateur — ce qu'un rapport n'a jamais après coup. Le pied
+  de page est rendu **sur l'accueil et sur « À propos », nulle part ailleurs**
+  — la règle famille du 06/09/2026, que `pwa-doctor` vérifie ; dans la
+  coquille, il suivait chaque écran ;
 - **la fiche d'installation** (`PwaInstallPrompt`) apparaît dans « À propos »
   quand le navigateur le permet, et seulement alors.
 
