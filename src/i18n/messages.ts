@@ -82,6 +82,17 @@ const fr = {
     linkAgain: 'Recevoir un autre lien',
     usePassword: 'Se connecter avec un mot de passe',
     useLink: 'Recevoir un lien plutôt',
+    danger: {
+      title: 'Zone dangereuse',
+      body: 'Supprimer votre compte efface vos notes, votre profil et le compte lui-même. Rien n’est conservé, et cette action ne s’annule pas.',
+      action: 'Supprimer mon compte',
+      confirmLabel: 'Retapez votre adresse pour confirmer',
+      confirmHint: 'L’adresse du compte est {email}.',
+      confirm: 'Supprimer définitivement',
+      cancel: 'Annuler',
+      mismatch: 'L’adresse saisie ne correspond pas : rien n’a été supprimé.',
+      failed: 'La suppression a échoué : {error}',
+    },
   },
 
   about: {
@@ -154,6 +165,17 @@ const en: typeof fr = {
     linkAgain: 'Send another link',
     usePassword: 'Sign in with a password',
     useLink: 'Send me a link instead',
+    danger: {
+      title: 'Danger zone',
+      body: 'Deleting your account erases your notes, your profile and the account itself. Nothing is kept, and this cannot be undone.',
+      action: 'Delete my account',
+      confirmLabel: 'Type your address again to confirm',
+      confirmHint: 'The account address is {email}.',
+      confirm: 'Delete permanently',
+      cancel: 'Cancel',
+      mismatch: 'The address does not match: nothing was deleted.',
+      failed: 'Deletion failed: {error}',
+    },
   },
 
   about: {

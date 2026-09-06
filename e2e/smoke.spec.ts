@@ -112,6 +112,16 @@ test.describe('@critical le cadre', () => {
     // la mise en service.
     await page.goto('/compte');
     await expect(page.getByText('Mode local')).toBeVisible();
+
+    // ET LA ZONE DANGEREUSE N'EXISTE PAS. Sans backend distant, il n'y a pas
+    // de compte à effacer : un bouton « Supprimer mon compte » qui n'efface
+    // rien serait pire que son absence. C'est la seule moitié de l'ADR 0009
+    // qu'un e2e sans configuration puisse prouver — l'effacement lui-même est
+    // prouvé en pgTAP, sur une base réelle.
+    await expect(page.getByTestId('zone-dangereuse')).toHaveCount(0);
+    await expect(
+      page.getByRole('button', { name: 'Supprimer mon compte' })
+    ).toHaveCount(0);
   });
 
   test('un lien profond rafraîchi sert l’app, pas la page d’erreur', async ({
