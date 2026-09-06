@@ -93,10 +93,15 @@ Ce que la variante apporte, tout est déjà là :
 | `.github/workflows/supabase-*.yml`   | tests pgTAP sur une pile jetable, migrations, et le keep-alive anti-pause du plan Free                      |
 
 Pour l'activer : poser les deux variables dans **`vars`** du dépôt (jamais dans
-`secrets` — Vite les copie dans le bundle), les trois secrets `SUPABASE_*` pour
-les migrations, puis appliquer `supabase/keep-alive.sql`. Sans la table
+`secrets` — Vite les copie dans le bundle), la référence du projet en variable
+aussi (`SUPABASE_PROJECT_ID` : elle est dans l'URL), deux secrets pour les
+migrations (`SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` — par le
+propriétaire), puis appliquer `supabase/keep-alive.sql`. Sans la table
 `keep_alive`, le ping du keep-alive répond 404 **en silence**, et le projet
-s'endort quand même.
+s'endort quand même. La procédure complète, geste par geste et avec ses
+variantes, est dans
+[PARAMETRAGE.md](https://github.com/mister-guiiug/dev-pwa-config/blob/main/PARAMETRAGE.md)
+du socle.
 
 Deux réglages de plus, côté projet Supabase, que ni une migration ni un
 workflow ne peuvent poser — et dont l'absence ne fait aucun bruit :
