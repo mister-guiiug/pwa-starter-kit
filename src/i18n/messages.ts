@@ -65,6 +65,14 @@ const fr = {
       "Aucun backend n'est configuré : tout reste sur cet appareil. L'écran est là quand même — un écran masqué par une condition finit par diverger de celui qui s'affiche.",
     signOut: 'Se déconnecter',
     admin: 'Administration',
+    linkIntro:
+      'Un lien à usage unique arrive dans votre boîte : aucun mot de passe à retenir, ni à voler.',
+    linkSentTitle: 'Lien envoyé',
+    linkSentBody:
+      "Un lien vient d'être envoyé à {email}. Ouvrez-le depuis cet appareil : il vous ramènera ici, connecté·e. Il n'est valable qu'une fois.",
+    linkAgain: 'Recevoir un autre lien',
+    usePassword: 'Se connecter avec un mot de passe',
+    useLink: 'Recevoir un lien plutôt',
   },
 
   about: {
@@ -120,6 +128,14 @@ const en: typeof fr = {
       'No backend is configured: everything stays on this device. The screen is still here — a screen hidden behind a condition drifts away from the one that shows.',
     signOut: 'Sign out',
     admin: 'Admin',
+    linkIntro:
+      'A one-time link lands in your inbox: no password to remember, none to steal.',
+    linkSentTitle: 'Link sent',
+    linkSentBody:
+      'A link was just sent to {email}. Open it from this device: it brings you back here, signed in. It only works once.',
+    linkAgain: 'Send another link',
+    usePassword: 'Sign in with a password',
+    useLink: 'Send me a link instead',
   },
 
   about: {

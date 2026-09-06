@@ -67,3 +67,40 @@ qu'à l'affichage.
 **Filtrer par `user_id` dans les requêtes du front.** La RLS le fait déjà.
 L'ajouter donnerait l'illusion que la sécurité vient du client, et rendrait
 impossible de vérifier la protection sans lire le front.
+
+## Amendement du 05/09/2026 — le lien d'abord, et le rôle exige un hook
+
+**Le rôle « lu dans le jeton » n'y était pas.** `useRole()` lisait
+`app_metadata.roles`, et rien ne l'y écrivait : la migration `0001` crée
+`user_roles`, pas un claim. Le badge admin ne pouvait donc jamais s'afficher,
+et aucun test ne le couvrait. La décision tient — le rôle vient du jeton,
+jamais d'une requête du front — mais elle demandait une pièce :
+`0004_role_dans_le_jeton.sql` crée le hook « Custom Access Token » que GoTrue
+appelle à chaque émission, et qui recopie `user_roles` dans le jeton. Le hook
+doit être **activé** côté projet : `supabase/config.toml` pour la pile locale,
+le tableau de bord (Authentication → Hooks) ou l'API de gestion
+(`hook_custom_access_token_uri = pg-functions://postgres/public/custom_access_token_hook`)
+pour le projet hébergé. Sans cette activation, le jeton reste muet et le badge
+aussi — deux assertions pgTAP figent le comportement de la fonction, un test
+unitaire celui du crochet, et le README liste le geste parmi ceux qu'une
+application Supabase fait à la main.
+
+**La connexion par lien devient l'entrée par défaut.** Les deux applications
+de la famille qui ont écrit un écran de compte en septembre 2026 passent par
+`signInWithOtp` ; `LoginForm mode="otp"` du socle ne rend qu'un champ, et le
+mot de passe reste à un clic. Deux réglages sans lesquels le lien ne ramène
+nulle part, et qui échouent en silence : `flowType: 'pkce'` sur le client —
+une nécessité de **routage** dès qu'une application route par `#`, puisque
+le flux implicite met le jeton dans le fragment, là où le routeur lit la
+route ; posé ici bien que le squelette route par chemin, parce que ce fichier
+part chez neuf applications qui routent par `#` — et la liste d'URL de retour
+du projet Supabase, qui ne contient que `http://localhost:3000` à la création.
+
+**Une nuance sur « filtrer par `user_id` dans le front ».** Elle reste vraie
+ici : `notes` n'a qu'une politique de lecture. Le jour où une seconde
+politique permissive apparaît (« les notes publiques »), les deux se combinent
+par **OU**, et une lecture sans filtre rapporte aussi les notes des autres. Le
+serveur a raison — une note publique est publique ; c'est la requête qui doit
+dire ce qu'elle cherche, et une assertion pgTAP doit figer ce comportement
+avant qu'un écran ne le découvre en production (mister-miss-koh, § 2 bis de
+son `rls.test.sql`).

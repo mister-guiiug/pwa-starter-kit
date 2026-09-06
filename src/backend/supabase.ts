@@ -16,7 +16,18 @@ const log = createLogger('supabase');
  * Elle sait aussi dire ce qui manque (`missing()`) plutôt que d'échouer sur un
  * `undefined`, et c'est ce que l'écran de réglages affiche.
  */
-export const supabase = createSupabaseClientFactory<SupabaseLike>();
+export const supabase = createSupabaseClientFactory<SupabaseLike>({
+  // `flowType: 'pkce'` N'EST PAS UN RÉGLAGE DE SÉCURITÉ ICI, C'EST UNE
+  // NÉCESSITÉ DE ROUTAGE. La connexion par lien renvoie, en flux implicite,
+  // le jeton dans le FRAGMENT (`#access_token=…`) — l'endroit exact où un
+  // `HashRouter` lit la route : il y verrait une adresse inconnue, la
+  // remplacerait par « / », et le jeton disparaîtrait avant d'avoir servi.
+  // PKCE renvoie `?code=…` dans la query, que le routeur ne touche pas. Ce
+  // squelette route par chemin (ADR 0001) et n'en souffrirait pas ; il le
+  // pose quand même, parce que neuf applications de la famille routent par
+  // `#` et que ce fichier part chez elles. Mister-miss-koh l'a payé.
+  auth: { flowType: 'pkce' },
+});
 
 /** Le strict nécessaire du client, pour ne pas figer une version du SDK. */
 interface SupabaseLike {
