@@ -10,7 +10,9 @@ import { useToast } from '@mister-guiiug/dev-pwa-config/react/toast';
 import { AppFooter } from '@mister-guiiug/dev-pwa-config/react/app-footer';
 import { useI18n } from '../../i18n/index.ts';
 import { REPO_URL } from '../../app/links.ts';
+import { notesSync } from '../../backend/index.ts';
 import { useNotes } from './store.ts';
+import { SyncState } from './SyncState.tsx';
 
 /** L'identifiant de la notification d'une note : un sursis, une notification. */
 const undoToastId = (id: string) => `note-supprimee-${id}`;
@@ -122,6 +124,17 @@ export function HomeScreen() {
           l'état a déjà été restauré, et sans ce bandeau la note disparaîtrait
           sans explication. */}
       {error ? <ErrorBanner message={error} className="mt-4" /> : null}
+
+      {/* L'ÉTAT DE LA FILE, quand il y a un réseau à traverser. En local il
+          n'y en a pas : `notesSync` est `null` et rien n'est rendu — un
+          indicateur qui dirait « à jour » sans jamais rien attendre serait du
+          décor. Le rendu conditionnel est ICI, pas dans le composant : un
+          crochet ne s'appelle pas sous condition. */}
+      {notesSync ? (
+        <div className="mt-4">
+          <SyncState sync={notesSync} onResync={() => void load()} />
+        </div>
+      ) : null}
 
       {!ready ? (
         // `label` est OBLIGATOIRE : un squelette sans nom accessible est une

@@ -28,6 +28,7 @@ personne à la rediscuter.
 | [0007](./0007-comptes-et-droits.md)             | La base décide des droits ; l'interface se contente d'obéir      |
 | [0008](./0008-annuler-plutot-que-confirmer.md)  | Annuler remplace confirmer : un sursis de huit secondes          |
 | [0009](./0009-supprimer-son-compte.md)          | Effacer son compte, pas seulement ses données — et le prouver    |
+| [0010](./0010-ecrire-hors-ligne.md)             | Écrire hors ligne : une file sur le port, pas dans l'adaptateur  |
 
 ## Quand une application s'écarte
 

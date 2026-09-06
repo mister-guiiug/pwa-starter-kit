@@ -45,6 +45,13 @@ const fr = {
       one: '{count} note',
       other: '{count} notes',
     },
+    sync: {
+      refused: {
+        one: '{count} écriture refusée par la base : {error}',
+        other: '{count} écritures refusées par la base : {error}',
+      },
+      retry: 'Réessayer',
+    },
   },
   settings: {
     title: 'Réglages',
@@ -127,6 +134,13 @@ const en: typeof fr = {
     count: {
       one: '{count} note',
       other: '{count} notes',
+    },
+    sync: {
+      refused: {
+        one: '{count} write refused by the database: {error}',
+        other: '{count} writes refused by the database: {error}',
+      },
+      retry: 'Retry',
     },
   },
   settings: {

@@ -113,7 +113,14 @@ Chaque pièce est là parce que son absence a coûté quelque chose de mesuré :
   Surtout : qu'une fonction `security definer` puisse effacer dans `auth.users`
   était **documenté et jamais prouvé** sur ce parc ; dix-huit assertions pgTAP
   le figent, mécanisme compris — cf.
-  [ADR 0009](./docs/adr/0009-supprimer-son-compte.md).
+  [ADR 0009](./docs/adr/0009-supprimer-son-compte.md) ;
+- **on écrit hors ligne**, et ce qui attend le **dit**. La file du socle
+  (`sync-queue`) enveloppe le port distant : une note écrite sans réseau est
+  retenue puis rejouée, une écriture refusée par la RLS part en lettre morte au
+  premier essai au lieu de boucler, et `SyncStatusBadge` porte l'état. Le
+  branchement d'un port sur cette file avait été écrit trois fois dans le parc
+  et jamais dans le squelette — cf.
+  [ADR 0010](./docs/adr/0010-ecrire-hors-ligne.md).
 
 ## Supabase : une variante, pas un fork
 
@@ -130,6 +137,7 @@ Ce que la variante apporte, tout est déjà là :
 | `supabase/tests/*.test.sql`          | trente et une assertions pgTAP : deux comptes ne se voient pas, le rôle arrive dans le jeton, un compte s'efface vraiment          |
 | `supabase/config.toml`               | la pile locale, pour jouer migrations et tests depuis zéro (`pwa-supabase-test.yml`)                                               |
 | `src/backend/supabase.ts`            | l'adaptateur du seul port `notes` — les autres restent locaux ; `flowType: 'pkce'`                                                 |
+| `src/backend/queued-notes.ts`        | la file d'écritures hors ligne (`sync-queue` du socle) enveloppant ce port ; rien en mode local                                    |
 | `src/auth/`, `src/features/account/` | le fournisseur, le formulaire — lien d'abord, mot de passe en option — et `useRole()`                                              |
 | `.github/workflows/supabase-*.yml`   | tests pgTAP sur une pile jetable, migrations, et le keep-alive anti-pause du plan Free                                             |
 
