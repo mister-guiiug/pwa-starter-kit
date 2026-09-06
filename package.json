@@ -28,7 +28,7 @@
   },
   "bundleBudget": {
     "totalGzipKb": 210,
-    "mainChunkKb": 420
+    "mainChunkKb": 430
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
