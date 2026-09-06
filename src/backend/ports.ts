@@ -43,12 +43,27 @@ export type NotesSnapshot = z.infer<typeof notesSchema>;
  * où il n'y en a pas — et il est plus faible que celui de la découverte
  * tardive : à ce moment-là, ce sont les écrans qu'il faut reprendre.
  */
+/**
+ * DES MUTATIONS, PAS UN INSTANTANÉ. La première version de ce port n'avait
+ * que `save(snapshot)` : l'adaptateur Supabase effaçait TOUTES les lignes de
+ * l'utilisateur puis réinsérait la liste, à chaque note ajoutée — son propre
+ * commentaire annonçait la limite. `add` et `remove` disent ce qui a changé ;
+ * le distant touche une ligne, le local réécrit son magasin (il ne sait rien
+ * faire d'autre, et ça ne coûte rien).
+ *
+ * `import` est le seul chemin qui REMPLACE tout : c'est celui de l'écran de
+ * réglages, et il rend ce qu'il a retenu — validé par le schéma, comme ce qui
+ * vient du disque ou du réseau.
+ */
 export interface NotesRepository {
   load(): Promise<NotesSnapshot>;
-  save(snapshot: NotesSnapshot): Promise<void>;
+  add(note: Note): Promise<void>;
+  remove(id: string): Promise<void>;
   clear(): Promise<void>;
   /** L'état courant en JSON, pour l'export de l'écran de réglages. */
   export(): Promise<string | null>;
+  /** Remplace tout par un JSON exporté, validé ; rejette un fichier illisible. */
+  import(json: string): Promise<NotesSnapshot>;
 }
 
 export interface Backend {

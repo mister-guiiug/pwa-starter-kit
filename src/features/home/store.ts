@@ -16,6 +16,8 @@ interface NotesState {
   add: (text: string) => Promise<void>;
   remove: (id: string) => Promise<void>;
   clear: () => Promise<void>;
+  /** Remplace tout par un fichier exporté ; rend le nombre de notes retenues. */
+  importJson: (json: string) => Promise<number | null>;
 }
 
 /**
@@ -33,12 +35,12 @@ interface NotesState {
  * générateur, pour environ deux cent cinquante sites d'appel.
  */
 async function persist(
-  notes: Note[],
+  ecriture: () => Promise<void>,
   precedent: Note[],
   set: (partial: Partial<NotesState>) => void
 ) {
   try {
-    await backend.notes.save({ notes });
+    await ecriture();
     set({ error: null });
   } catch (cause) {
     log.error('écriture des notes', { cause });
@@ -77,16 +79,32 @@ export const useNotes = create<NotesState>((set, get) => ({
       createdAt: new Date().toISOString(),
     };
     // La plus récente en tête : c'est celle qu'on vient d'écrire.
-    const notes = [note, ...precedent];
-    set({ notes });
-    await persist(notes, precedent, set);
+    set({ notes: [note, ...precedent] });
+    // Le port reçoit LA note, pas la liste : le distant insère une ligne.
+    await persist(() => backend.notes.add(note), precedent, set);
   },
 
   async remove(id) {
     const precedent = get().notes;
-    const notes = precedent.filter(n => n.id !== id);
-    set({ notes });
-    await persist(notes, precedent, set);
+    set({ notes: precedent.filter(n => n.id !== id) });
+    await persist(() => backend.notes.remove(id), precedent, set);
+  },
+
+  /**
+   * Pas d'optimisme ici : on ne sait pas ce que le fichier contient avant que
+   * le port l'ait validé. L'état ne change qu'avec ce qu'il a retenu ; un
+   * fichier refusé laisse les notes intactes et porte l'erreur.
+   */
+  async importJson(json) {
+    try {
+      const snapshot = await backend.notes.import(json);
+      set({ notes: snapshot.notes, error: null });
+      return snapshot.notes.length;
+    } catch (cause) {
+      log.error('import des notes', { cause });
+      set({ error: cause instanceof Error ? cause.message : String(cause) });
+      return null;
+    }
   },
 
   async clear() {

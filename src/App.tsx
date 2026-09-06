@@ -102,8 +102,11 @@ function Shell() {
         </Routes>
 
         {/* Le lien de soutien n'est pas passé : `AppFooter` le prend au
-            catalogue de la famille, source unique du pseudo. */}
-        <AppFooter repoUrl={REPO_URL} />
+            catalogue de la famille, source unique du pseudo. `issues` ajoute
+            « Signaler un problème » : le gabarit `bug.yml` du compte, prérempli
+            avec la version, le commit, l'écran et le navigateur — ce qu'un
+            rapport n'a jamais quand on le demande après coup. */}
+        <AppFooter repoUrl={REPO_URL} issues />
       </PageContainer>
 
       <BottomNav

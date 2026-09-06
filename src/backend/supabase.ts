@@ -1,6 +1,7 @@
 import { createSupabaseClientFactory } from '@mister-guiiug/dev-pwa-config/supabase-client';
 import { createLogger } from '@mister-guiiug/dev-pwa-config/logger';
-import { notesSchema, type Backend, type NotesSnapshot } from './ports.ts';
+import { notesSchema, type Backend, type Note } from './ports.ts';
+import { parseNotesFile, stringifyNotesFile } from './notes-file.ts';
 
 const log = createLogger('supabase');
 
@@ -89,33 +90,36 @@ export function createSupabaseNotes(): Backend['notes'] {
     },
 
     /**
-     * Remplace l'instantané : le magasin d'écran raisonne en listes, pas en
-     * mutations. C'est acceptable pour quelques dizaines de notes ; au-delà,
-     * le port devrait exposer `add`/`remove` et non `save`. La limite est
-     * écrite ici pour qu'on la voie avant de la franchir.
+     * UNE LIGNE PAR GESTE. La première version de cet adaptateur n'avait que
+     * `save(snapshot)` : elle effaçait toutes les lignes de l'utilisateur et
+     * réinsérait la liste entière à chaque note ajoutée — deux requêtes, une
+     * fenêtre sans aucune note entre les deux, et un coût qui grandissait avec
+     * la liste. Son commentaire annonçait la limite ; la voici franchie dans
+     * le bon sens.
      */
-    async save(snapshot: NotesSnapshot) {
+    async add(note: Note) {
       const db = await client();
       const {
         data: { user },
       } = await db.auth.getUser();
       if (!user) throw new Error('écriture sans session');
-
-      const { error: cleared } = await db
-        .from('notes')
-        .delete()
-        .eq('user_id', user.id);
-      if (cleared) throw new Error(cleared.message);
-
-      if (snapshot.notes.length === 0) return;
-      const { error } = await db.from('notes').insert(
-        snapshot.notes.map(note => ({
+      const { error } = await db.from('notes').insert([
+        {
           id: note.id,
           user_id: user.id,
           text: note.text,
           created_at: note.createdAt,
-        }))
-      );
+        },
+      ]);
+      if (error) throw new Error(error.message);
+    },
+
+    async remove(id: string) {
+      const db = await client();
+      // Pas de `user_id` ici non plus : `notes_delete_own` ne laisse passer
+      // que les lignes du propriétaire, et une autre ligne portant cet
+      // identifiant ne serait simplement pas touchée.
+      const { error } = await db.from('notes').delete().eq('id', id);
       if (error) throw new Error(error.message);
     },
 
@@ -129,9 +133,44 @@ export function createSupabaseNotes(): Backend['notes'] {
       if (error) throw new Error(error.message);
     },
 
+    // Le même fichier que le local : `{ v, data }`, pour qu'un export d'un
+    // appareil se relise sur l'autre quel que soit le backend derrière.
     async export() {
-      const snapshot = await this.load();
-      return JSON.stringify(snapshot, null, 2);
+      return stringifyNotesFile(await this.load());
+    },
+
+    /**
+     * Le SEUL chemin qui remplace tout : un fichier exporté, validé et migré
+     * par la même chaîne que le local (`notes-file.ts`), puis les lignes de
+     * l'utilisateur effacées et réinsérées. C'est l'ancien `save`, réservé au
+     * geste qui le mérite — et validé AVANT d'effacer quoi que ce soit.
+     */
+    async import(json: string) {
+      const snapshot = parseNotesFile(json);
+      const db = await client();
+      const {
+        data: { user },
+      } = await db.auth.getUser();
+      if (!user) throw new Error('écriture sans session');
+
+      const { error: cleared } = await db
+        .from('notes')
+        .delete()
+        .eq('user_id', user.id);
+      if (cleared) throw new Error(cleared.message);
+
+      if (snapshot.notes.length > 0) {
+        const { error } = await db.from('notes').insert(
+          snapshot.notes.map(note => ({
+            id: note.id,
+            user_id: user.id,
+            text: note.text,
+            created_at: note.createdAt,
+          }))
+        );
+        if (error) throw new Error(error.message);
+      }
+      return snapshot;
     },
   };
 }

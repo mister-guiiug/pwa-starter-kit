@@ -52,6 +52,15 @@ const fr = {
     language: 'Langue',
     data: 'Données',
     export: 'Exporter mes notes',
+    import: 'Importer mes notes',
+    importConfirm: 'Remplacer les notes actuelles ?',
+    importBody:
+      'Le fichier remplacera tout ce qui est sur cet appareil. Exportez d’abord si vous voulez garder l’état actuel.',
+    imported: {
+      one: '{count} note importée.',
+      other: '{count} notes importées.',
+    },
+    importFailed: 'Fichier refusé : {error}',
     reset: 'Tout effacer',
     resetConfirm: 'Effacer toutes les notes ?',
     resetBody: 'Cette action est définitive.',
@@ -115,6 +124,15 @@ const en: typeof fr = {
     language: 'Language',
     data: 'Data',
     export: 'Export my notes',
+    import: 'Import my notes',
+    importConfirm: 'Replace the current notes?',
+    importBody:
+      'The file will replace everything on this device. Export first if you want to keep the current state.',
+    imported: {
+      one: '{count} note imported.',
+      other: '{count} notes imported.',
+    },
+    importFailed: 'File rejected: {error}',
     reset: 'Erase everything',
     resetConfirm: 'Erase all notes?',
     resetBody: 'This cannot be undone.',
