@@ -136,7 +136,11 @@ test.describe('@critical le cadre', () => {
   test('« Signaler un problème » part avec la version et l’écran', async ({
     page,
   }) => {
-    await page.goto('/reglages');
+    // DEPUIS « À PROPOS », et plus depuis les réglages : le pied de page a
+    // quitté la coquille pour l'accueil et cet écran, les deux seuls que la
+    // règle famille du 06/09/2026 autorise. Rendu hors des routes, il suivait
+    // chaque écran — donc aussi ceux qui n'ont rien à en faire.
+    await page.goto('/a-propos');
     const lien = page.getByRole('link', { name: 'Signaler un problème' });
     await expect(lien).toHaveAttribute(
       'href',
@@ -147,7 +151,46 @@ test.describe('@critical le cadre', () => {
     // ce qu'un rapport n'a jamais quand on le demande après coup.
     expect(url.searchParams.get('version')).toMatch(/^v\d+\.\d+\.\d+/);
     expect(url.searchParams.get('environnement')).toContain('écran ');
-    expect(url.searchParams.get('environnement')).toContain('/reglages');
+    expect(url.searchParams.get('environnement')).toContain('/a-propos');
+  });
+
+  test('les trois liens de la famille : sur l’accueil et « À propos », nulle part ailleurs', async ({
+    page,
+  }) => {
+    // La règle famille du 06/09/2026, vue de l'écran. `pwa-doctor` la lit dans
+    // le code (`liens-famille`) ; ce test la lit dans le rendu, où un pied de
+    // page remonté dans la coquille se verrait tout de suite.
+    //
+    // TOUT EST PORTÉ PAR LE PIED DE PAGE, et les noms sont EXACTS : la grille
+    // des applications sœurs rend seize liens « Code source de <app> », qu'une
+    // recherche par sous-chaîne ramasse aussi.
+    const pied = page.locator('[data-dwc="app-footer"]');
+    const liens = ['Code source', 'M’offrir un café', 'Signaler un problème'];
+
+    for (const route of ['/', '/a-propos']) {
+      await page.goto(route);
+      await expect(pied, `pied de page attendu sur ${route}`).toBeVisible();
+      for (const nom of liens) {
+        await expect(
+          pied.getByRole('link', { name: nom, exact: true }),
+          `${nom} attendu une fois sur ${route}`
+        ).toHaveCount(1);
+      }
+    }
+
+    for (const route of ['/reglages', '/compte']) {
+      await page.goto(route);
+      // L'écran est bien rendu : sans cette ancre, un test qui ne trouve rien
+      // passerait aussi sur une page blanche.
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      await expect(pied, `pied de page interdit sur ${route}`).toHaveCount(0);
+      for (const nom of liens) {
+        await expect(
+          page.getByRole('link', { name: nom, exact: true }),
+          `${nom} ne doit pas être sur ${route}`
+        ).toHaveCount(0);
+      }
+    }
   });
 
   test('la langue bascule, et le cadre suit', async ({ page }) => {
