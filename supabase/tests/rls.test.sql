@@ -68,9 +68,24 @@ insert into notes (id, user_id, text) values
 
 set local role anon;
 
-select is((select count(*)::int from notes), 0, 'anon ne lit aucune note');
-select is((select count(*)::int from profiles), 0, 'anon ne lit aucun profil');
-select is((select count(*)::int from user_roles), 0, 'anon ne lit aucun rôle');
+-- PLUS FORT QU'UNE LISTE VIDE : la lecture est REFUSÉE. Le premier verrou de
+-- 0003 (`revoke all … from anon`) fait échouer la requête en 42501 avant même
+-- que les politiques ne filtrent. Ces trois assertions attendaient un zéro ;
+-- la première exécution réelle (06/09/2026, pile jetable en CI) a montré
+-- qu'elles n'avaient jamais pu passer — elles étaient vertes et fausses,
+-- parce que jamais jouées.
+select throws_ok(
+  $$ select count(*) from notes $$, '42501', null,
+  'anon ne peut même pas lire la table des notes'
+);
+select throws_ok(
+  $$ select count(*) from profiles $$, '42501', null,
+  'anon ne peut même pas lire la table des profils'
+);
+select throws_ok(
+  $$ select count(*) from user_roles $$, '42501', null,
+  'anon ne peut même pas lire la table des rôles'
+);
 
 -- ── Alice ne voit qu'elle ─────────────────────────────────────────────────
 
