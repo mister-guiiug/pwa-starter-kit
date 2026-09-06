@@ -88,7 +88,7 @@ function Shell() {
 
       <ConnectionBanner />
 
-      <PageContainer as="main" id="contenu" width="md" className="app-main">
+      <PageContainer as="main" id="contenu" width="md" reserve="bottom-nav">
         <Routes>
           <Route path="/" element={<HomeScreen />} />
           <Route path="/reglages" element={<SettingsScreen />} />
@@ -106,7 +106,12 @@ function Shell() {
         <AppFooter repoUrl={REPO_URL} />
       </PageContainer>
 
-      <BottomNav items={nav} linkComponent={Link} hrefProp="to" />
+      <BottomNav
+        items={nav}
+        linkComponent={Link}
+        hrefProp="to"
+        placement="fixed"
+      />
     </>
   );
 }

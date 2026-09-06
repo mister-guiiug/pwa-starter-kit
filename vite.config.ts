@@ -10,6 +10,7 @@ import {
 } from '@mister-guiiug/dev-pwa-config/vite-pwa-base';
 import { cspPlugin } from '@mister-guiiug/dev-pwa-config/vite-csp';
 import { versionPlugin } from '@mister-guiiug/dev-pwa-config/vite-version';
+import { devPortOf } from '@mister-guiiug/dev-pwa-config/apps-catalog';
 
 /**
  * LE MANIFESTE NE S'ÉCRIT PAS À LA MAIN.
@@ -42,6 +43,12 @@ export default defineConfig(({ command }) => {
 
   return {
     base: basePath,
+    // LE PORT VIENT DU CATALOGUE. Chaque application du parc a le sien
+    // (`DEV_PORTS`), le squelette a 5240, et une application engendrée reçoit
+    // un port libre à sa naissance — le générateur récrit ce repli.
+    // `strictPort` : un port pris fait échouer le démarrage, au lieu de glisser
+    // en silence vers un autre que `.claude/launch.json` ne connaît pas.
+    server: { port: devPortOf(APP_ID, 5240), strictPort: true },
     build: { sourcemap: true },
     plugins: [
       react(),
@@ -67,42 +74,17 @@ export default defineConfig(({ command }) => {
       // d'erreur de GitHub. Quatre apps en souffraient en production.
       spaFallbackPlugin(),
 
-      VitePWA(
-        pwaBaseOptions({
-          id: APP_ID,
-
-          // COULEURS DONNÉES EXPLICITEMENT. `pwaBaseOptions` sait les lire dans
-          // `themes.js` du socle, mais seulement pour une app INSCRITE au
-          // catalogue de la famille. Une app neuve n'y est pas encore : sans
-          // ces deux lignes, le manifeste sort sans `theme_color`, et
-          // `vite-plugin-pwa` avertit que l'application « ne pourra pas être
-          // installée ». L'avertissement passe dans le bruit du build.
-          themeColor: '#3b6ea5',
-          backgroundColor: '#f7f8fa',
-          // Les captures décident de l'interface d'INSTALLATION : sans elles,
-          // Chrome propose une ligne et un bouton au lieu d'une fiche. Les
-          // deux formats sont requis — `narrow` sur téléphone, `wide` sur
-          // ordinateur — et se régénèrent par `npm run screenshots`.
-          manifest: {
-            screenshots: [
-              {
-                src: 'screenshots/narrow.png',
-                sizes: '540x1170',
-                type: 'image/png',
-                form_factor: 'narrow',
-                label: "L'écran d'accueil",
-              },
-              {
-                src: 'screenshots/wide.png',
-                sizes: '1280x720',
-                type: 'image/png',
-                form_factor: 'wide',
-                label: 'Les réglages',
-              },
-            ],
-          },
-        })
-      ),
+      // Le manifeste sort entier de `pwaBaseOptions({ id })`. Depuis le socle
+      // 4.3.0, il n'y a plus rien à lui redire ici :
+      //   - `theme_color` et `background_color` sont lus dans `src/index.css`
+      //     (`--dwc-primary`, `--dwc-bg`) quand l'app n'est pas au catalogue ;
+      //     le build AVERTIT si aucun chemin ne donne de couleur, car sans
+      //     `theme_color` l'application ne s'installe pas ;
+      //   - les captures sont lues dans `public/screenshots` (`narrow.png`,
+      //     `wide.png`), dimensions comprises. Elles décident de l'interface
+      //     d'installation — une fiche au lieu d'une ligne et un bouton — et
+      //     `npm run screenshots` les régénère depuis un build.
+      VitePWA(pwaBaseOptions({ id: APP_ID })),
 
       ...(analyze
         ? [
