@@ -77,7 +77,7 @@ describe('le magasin de notes', () => {
     // que l'écran ne doit JAMAIS faire, c'est afficher une note que la base
     // n'a pas acceptée.
     const echec = vi
-      .spyOn(backend.notes, 'save')
+      .spyOn(backend.notes, 'add')
       .mockRejectedValueOnce(new Error('refus de la base'));
 
     await useNotes.getState().add('jamais écrite');
@@ -85,5 +85,69 @@ describe('le magasin de notes', () => {
     expect(useNotes.getState().notes).toEqual(avant);
     expect(useNotes.getState().error).toBe('refus de la base');
     echec.mockRestore();
+  });
+
+  it('parle au port en mutations : une note ajoutée, une note retirée', async () => {
+    // Le contrat que le distant attend : `add` reçoit LA note, `remove`
+    // l'identifiant — jamais la liste entière. Le premier adaptateur Supabase
+    // effaçait tout et réinsérait à chaque geste.
+    const add = vi.spyOn(backend.notes, 'add');
+    const remove = vi.spyOn(backend.notes, 'remove');
+
+    await useNotes.getState().add('une');
+    const [ajoutee] = useNotes.getState().notes;
+    expect(add).toHaveBeenCalledWith(
+      expect.objectContaining({ id: ajoutee!.id, text: 'une' })
+    );
+
+    await useNotes.getState().remove(ajoutee!.id);
+    expect(remove).toHaveBeenCalledWith(ajoutee!.id);
+
+    add.mockRestore();
+    remove.mockRestore();
+  });
+
+  it('importe ce qu’il a exporté : le fichier remplace tout, et survit au rechargement', async () => {
+    // Le format du fichier est celui du magasin versionné (`{ v, data }`) :
+    // ce que `export` écrit, `import` le relit — sur l'autre appareil, et sur
+    // l'autre backend.
+    await useNotes.getState().add('elle aussi');
+    await useNotes.getState().add('venue du fichier');
+    const fichier = await backend.notes.export();
+    expect(fichier).toContain('"v": 1');
+
+    await useNotes.getState().clear();
+    await useNotes.getState().add('avant l’import');
+
+    expect(await useNotes.getState().importJson(fichier!)).toBe(2);
+    expect(useNotes.getState().notes.map(n => n.text)).toEqual([
+      'venue du fichier',
+      'elle aussi',
+    ]);
+
+    useNotes.setState({ notes: [], ready: false });
+    await useNotes.getState().load();
+    expect(useNotes.getState().notes.map(n => n.text)).toEqual([
+      'venue du fichier',
+      'elle aussi',
+    ]);
+  });
+
+  it('refuse un fichier illisible ou d’une autre forme, sans rien effacer', async () => {
+    await useNotes.getState().add('intacte');
+    const avant = useNotes.getState().notes;
+
+    expect(await useNotes.getState().importJson('{ pas du json')).toBeNull();
+    expect(useNotes.getState().error).not.toBeNull();
+    expect(useNotes.getState().notes).toEqual(avant);
+
+    // Du JSON valide, versionné, mais pas des notes : le schéma refuse.
+    expect(
+      await useNotes
+        .getState()
+        .importJson(JSON.stringify({ v: 1, data: { taches: [] } }))
+    ).toBeNull();
+    expect(useNotes.getState().notes).toEqual(avant);
+    expect((await backend.notes.load()).notes).toEqual(avant);
   });
 });

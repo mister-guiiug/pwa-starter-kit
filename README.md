@@ -84,6 +84,19 @@ Chaque pièce est là parce que son absence a coûté quelque chose de mesuré :
 - **les captures du manifeste sont lues dans `public/screenshots`** et les
   couleurs dans `src/index.css` : `vite.config.ts` ne les recopie plus, et
   `npm run screenshots` les régénère depuis un build.
+- **le port des notes parle en mutations** (`add`, `remove`, `import`) : le
+  premier adaptateur Supabase effaçait toutes les lignes et réinsérait la
+  liste à chaque note ajoutée — son propre commentaire annonçait la limite ;
+- **les réglages importent** ce qu'ils exportent, par
+  `versioned-store.import()` : le fichier passe par le schéma, un fichier
+  d'une autre app est refusé sans rien effacer, et des notes existantes
+  demandent confirmation avant d'être remplacées. C'est le seul moyen de
+  changer d'appareil sans compte, et presque aucune app du parc ne l'offrait ;
+- **« Signaler un problème »** dans le pied de page (`AppFooter issues`) :
+  le gabarit `bug.yml` du compte, prérempli avec la version, le commit,
+  l'écran et le navigateur — ce qu'un rapport n'a jamais après coup ;
+- **la fiche d'installation** (`PwaInstallPrompt`) apparaît dans « À propos »
+  quand le navigateur le permet, et seulement alors.
 
 ## Supabase : une variante, pas un fork
 

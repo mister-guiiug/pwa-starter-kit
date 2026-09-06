@@ -1,5 +1,6 @@
 import { createVersionedStore } from '@mister-guiiug/dev-pwa-config/versioned-store';
-import { notesSchema, type Backend, type NotesSnapshot } from './ports.ts';
+import type { Backend, NotesSnapshot } from './ports.ts';
+import { notesStoreOptions } from './notes-file.ts';
 
 /**
  * L'adaptateur local : `versioned-store` du socle, pas `localStorage` nu.
@@ -13,19 +14,13 @@ import { notesSchema, type Backend, type NotesSnapshot } from './ports.ts';
  * antérieure de l'app.
  *
  * `validate` reçoit le schéma zod de l'application : le socle ne dépend
- * d'aucun validateur, il appelle celui qu'on lui donne.
+ * d'aucun validateur, il appelle celui qu'on lui donne. Version, migrations et
+ * validation viennent de `notes-file.ts`, partagé avec l'adaptateur distant :
+ * les deux relisent les mêmes fichiers exportés.
  */
 export const notesStore = createVersionedStore<NotesSnapshot>({
   store: 'pwa-starter-kit',
-  key: 'notes',
-  version: 1,
-  validate: data => notesSchema.parse(data),
-  seed: () => ({ notes: [] }),
-
-  // Aucune migration pour l'instant : la version 1 est la première. Le jour où
-  // le modèle change, `migrations[1]` transforme la donnée de la v1 vers la v2
-  // — et le magasin, lui, tient le compte.
-  migrations: {},
+  ...notesStoreOptions,
 });
 
 /**
@@ -38,13 +33,25 @@ export function createLocalBackend(): Backend {
   return {
     notes: {
       load: async () => notesStore.load(),
-      save: async snapshot => {
-        notesStore.save(snapshot);
+      // Le local ne sait pas toucher une ligne : il relit, modifie, réécrit.
+      // C'est le distant qui a besoin de mutations, et c'est lui qui commande
+      // la forme du port.
+      add: async note => {
+        const { notes } = notesStore.load();
+        notesStore.save({ notes: [note, ...notes] });
+      },
+      remove: async id => {
+        const { notes } = notesStore.load();
+        notesStore.save({ notes: notes.filter(n => n.id !== id) });
       },
       clear: async () => {
         notesStore.clear();
       },
       export: async () => notesStore.export(),
+      // `versioned-store.import()` : le JSON passe par `validate` — le schéma
+      // zod — avant d'être écrit. Un fichier d'une autre app, ou tronqué, est
+      // refusé sans rien effacer.
+      import: async json => notesStore.import(json),
     },
   };
 }

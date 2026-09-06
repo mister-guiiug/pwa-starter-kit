@@ -70,6 +70,86 @@ test.describe('@critical le cadre', () => {
     );
   });
 
+  test('un fichier exporté s’importe, remplace tout, et survit au rechargement', async ({
+    page,
+  }) => {
+    // Le seul moyen de changer d'appareil sans compte. Quinze apps du parc
+    // savent exporter ; presque aucune ne relit son propre fichier.
+    await page.goto('/');
+    await page.getByLabel('Nouvelle note').fill('avant import');
+    await page.getByRole('button', { name: 'Ajouter' }).click();
+    await expect(page.getByText('avant import')).toBeVisible();
+
+    await page.goto('/reglages');
+    await page.getByLabel('Importer mes notes').setInputFiles({
+      name: 'notes.json',
+      mimeType: 'application/json',
+      // Le format d'un export : l'enveloppe versionnée du magasin du socle.
+      buffer: Buffer.from(
+        JSON.stringify({
+          v: 1,
+          data: {
+            notes: [
+              {
+                id: 'note_e2e',
+                text: 'venue du fichier',
+                createdAt: '2026-09-06T08:00:00.000Z',
+              },
+            ],
+          },
+        })
+      ),
+    });
+    // Des notes existent : l'import REMPLACE, donc il demande d'abord.
+    await page.getByRole('button', { name: 'Confirmer' }).click();
+    // Pas `getByRole('status')` : la page en porte déjà une (la bannière de
+    // connexion du socle), et le mode strict refuserait l'ambiguïté.
+    await expect(page.getByText('1 note importée.')).toBeVisible();
+
+    await page.goto('/');
+    await expect(page.getByText('venue du fichier')).toBeVisible();
+    await expect(page.getByText('avant import')).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByText('venue du fichier')).toBeVisible();
+  });
+
+  test('la fiche d’installation se propose quand le navigateur le permet', async ({
+    page,
+  }) => {
+    await page.goto('/a-propos');
+    // Aucun navigateur n'émet `beforeinstallprompt` sur un site de test : on
+    // le simule, avec la forme que `useInstallPrompt` du socle attend.
+    await page.evaluate(() => {
+      const event = new Event('beforeinstallprompt', { cancelable: true });
+      Object.assign(event, {
+        prompt: () => Promise.resolve(),
+        userChoice: Promise.resolve({ outcome: 'dismissed' }),
+      });
+      window.dispatchEvent(event);
+    });
+    await expect(
+      page.getByRole('region', { name: 'Installer l’application' })
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Installer' })).toBeVisible();
+  });
+
+  test('« Signaler un problème » part avec la version et l’écran', async ({
+    page,
+  }) => {
+    await page.goto('/reglages');
+    const lien = page.getByRole('link', { name: 'Signaler un problème' });
+    await expect(lien).toHaveAttribute(
+      'href',
+      /\/issues\/new\?template=bug\.yml/
+    );
+    const url = new URL((await lien.getAttribute('href')) ?? '');
+    // La version injectée par `vite-version` au build, et l'écran courant :
+    // ce qu'un rapport n'a jamais quand on le demande après coup.
+    expect(url.searchParams.get('version')).toMatch(/^v\d+\.\d+\.\d+/);
+    expect(url.searchParams.get('environnement')).toContain('écran ');
+    expect(url.searchParams.get('environnement')).toContain('/reglages');
+  });
+
   test('la langue bascule, et le cadre suit', async ({ page }) => {
     await page.goto('/reglages');
 
