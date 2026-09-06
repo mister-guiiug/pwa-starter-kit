@@ -39,8 +39,8 @@ const fr = {
     field: 'Nouvelle note',
     placeholder: 'Ce que je ne veux pas oublier',
     remove: 'Supprimer',
-    removeConfirm: 'Supprimer cette note ?',
-    removeBody: 'Elle ne sera pas récupérable.',
+    removed: 'Note supprimée',
+    undo: 'Annuler',
     count: {
       one: '{count} note',
       other: '{count} notes',
@@ -111,8 +111,8 @@ const en: typeof fr = {
     field: 'New note',
     placeholder: "What I don't want to forget",
     remove: 'Delete',
-    removeConfirm: 'Delete this note?',
-    removeBody: 'It cannot be recovered.',
+    removed: 'Note deleted',
+    undo: 'Undo',
     count: {
       one: '{count} note',
       other: '{count} notes',

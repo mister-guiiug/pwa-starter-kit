@@ -99,7 +99,13 @@ Chaque pièce est là parce que son absence a coûté quelque chose de mesuré :
   — la règle famille du 06/09/2026, que `pwa-doctor` vérifie ; dans la
   coquille, il suivait chaque écran ;
 - **la fiche d'installation** (`PwaInstallPrompt`) apparaît dans « À propos »
-  quand le navigateur le permet, et seulement alors.
+  quand le navigateur le permet, et seulement alors ;
+- **supprimer une note s'annule** au lieu de se confirmer : la note quitte
+  l'écran tout de suite, la base ne l'apprend qu'après huit secondes, et
+  « Annuler » la remet **à sa place**. `ConfirmDialog` du socle est adopté par
+  quatorze applications, `useUndoableState` par zéro, et **aucune** n'offrait
+  d'annulation après suppression d'un enregistrement — cf.
+  [ADR 0008](./docs/adr/0008-annuler-plutot-que-confirmer.md).
 
 ## Supabase : une variante, pas un fork
 

@@ -26,6 +26,7 @@ personne à la rediscuter.
 | [0005](./0005-mise-a-jour-du-service-worker.md) | `prompt`, jamais `autoUpdate`                                    |
 | [0006](./0006-observabilite.md)                 | Journal toujours, Sentry seulement s'il est configuré            |
 | [0007](./0007-comptes-et-droits.md)             | La base décide des droits ; l'interface se contente d'obéir      |
+| [0008](./0008-annuler-plutot-que-confirmer.md)  | Annuler remplace confirmer : un sursis de huit secondes          |
 
 ## Quand une application s'écarte
 
