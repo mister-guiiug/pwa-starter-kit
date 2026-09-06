@@ -7,7 +7,9 @@ import { EmptyState } from '@mister-guiiug/dev-pwa-config/react/empty-state';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
 import { ConfirmDialog } from '@mister-guiiug/dev-pwa-config/react/confirm-dialog';
+import { AppFooter } from '@mister-guiiug/dev-pwa-config/react/app-footer';
 import { useI18n } from '../../i18n/index.ts';
+import { REPO_URL } from '../../app/links.ts';
 import { useNotes } from './store.ts';
 
 /**
@@ -15,7 +17,9 @@ import { useNotes } from './store.ts';
  * Zustand, la persistance versionnée derrière un port, les primitives du
  * socle, et une suppression qui demande confirmation.
  *
- * C'est le seul métier du squelette, et il est fait pour être supprimé.
+ * C'est le seul métier du squelette, et il est fait pour être supprimé — sauf
+ * sa dernière ligne : le pied de page de la famille, que la règle du
+ * 06/09/2026 veut sur l'accueil et sur À propos, et nulle part ailleurs.
  */
 export function HomeScreen() {
   const { t, m, fmt } = useI18n();
@@ -114,6 +118,13 @@ export function HomeScreen() {
           </ul>
         </>
       )}
+
+      {/* Le lien de soutien n'est pas passé : `AppFooter` le prend au
+          catalogue de la famille, source unique du pseudo. `issues` ajoute
+          « Signaler un problème » : le gabarit `bug.yml` du compte, prérempli
+          avec la version, le commit, l'écran et le navigateur — ce qu'un
+          rapport n'a jamais quand on le demande après coup. */}
+      <AppFooter repoUrl={REPO_URL} issues className="mt-8" />
 
       <ConfirmDialog
         open={pending !== null}
