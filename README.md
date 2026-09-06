@@ -37,21 +37,26 @@ npm run dev
 L'installation lit le socle sur GitHub Packages : exporter `NODE_AUTH_TOKEN`
 (un jeton avec `read:packages`) avant `npm install`.
 
+Le serveur de développement écoute sur le port **5240**, celui que le catalogue
+du socle réserve au squelette : `devPortOf(APP_ID, 5240)` dans `vite.config.ts`,
+repris par `.claude/launch.json` pour l'aperçu du poste. Une application
+engendrée reçoit à sa naissance un port libre du même catalogue.
+
 **L'application démarre sans aucune configuration.** C'est une propriété à
 conserver : elle rend possibles le hors-ligne, les tests sans secrets, et la
 page publique qu'on ouvre sans compte.
 
 ## Vérifier
 
-| Commande              | Ce qu'elle vérifie                                          |
-| --------------------- | ----------------------------------------------------------- |
-| `npm run lint`        | ESLint du socle (react-hooks, jsx-a11y, react-refresh)      |
-| `npm run type-check`  | TypeScript strict, `tsc -b`                                 |
-| `npm test`            | Vitest — le magasin, du geste jusqu'au stockage relu        |
-| `npm run test:e2e`    | Playwright — le cadre, sur un **build de production**       |
-| `npm run build`       | `tsc -b`, Vite, budget de poids, puis `pwa-doctor --strict` |
-| `npm run doctor`      | La conformité au parc, sans faire échouer                   |
-| `npm run screenshots` | Régénère les captures du manifeste                          |
+| Commande              | Ce qu'elle vérifie                                                            |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `npm run lint`        | ESLint du socle (react-hooks, jsx-a11y, react-refresh)                        |
+| `npm run type-check`  | TypeScript strict, `tsc -b`                                                   |
+| `npm test`            | Vitest — le magasin, du geste jusqu'au stockage relu                          |
+| `npm run test:e2e`    | Playwright — le cadre, sur un **build de production**                         |
+| `npm run build`       | `tsc -b`, Vite, budget de poids, puis `pwa-doctor --strict`                   |
+| `npm run doctor`      | La conformité au parc, sans faire échouer                                     |
+| `npm run screenshots` | Régénère les captures du manifeste — `pwa-screenshots` du socle, sur un build |
 
 `npm run build` échoue si le poids dépasse le budget **ou** si `pwa-doctor`
 trouve la moindre dette. C'est délibéré : ce dépôt est la définition exécutable
@@ -72,7 +77,13 @@ Chaque pièce est là parce que son absence a coûté quelque chose de mesuré :
 - **le sélecteur de backend** retombe sur le local et le **dit** dans l'écran
   de réglages ;
 - **`components.css`** est importé : sans lui, les composants du socle sont
-  nus, ça compile, les tests passent, et l'écran est cassé.
+  nus, ça compile, les tests passent, et l'écran est cassé ;
+- **la barre basse est collée par `placement="fixed"`** et le contenu réservé
+  par `reserve="bottom-nav"` : huit dépôts recopiaient la même règle CSS, et
+  chaque copie pouvait diverger sur la zone sûre iOS ;
+- **les captures du manifeste sont lues dans `public/screenshots`** et les
+  couleurs dans `src/index.css` : `vite.config.ts` ne les recopie plus, et
+  `npm run screenshots` les régénère depuis un build.
 
 ## Supabase : une variante, pas un fork
 

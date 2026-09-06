@@ -74,23 +74,12 @@ body {
 }
 
 /*
- * LE SOCLE HABILLE LA BARRE BASSE ; C'EST L'APP QUI LA PLACE.
+ * LA BARRE BASSE EST COLLÉE PAR UNE PROP, PAS PAR UNE RÈGLE.
  *
- * `components.css` lui donne son fond, son filet, ses cibles tactiles et la
- * zone sûre iOS — mais la laisse en `position: relative`, délibérément : une
- * barre peut vivre dans une colonne flex qui occupe la hauteur, ou être collée
- * au bas de la fenêtre. Le choix appartient à la mise en page, donc à l'app.
- *
- * Ici, elle est collée. `.app-main` réserve la hauteur correspondante, sinon
- * le dernier élément de la page passe dessous et devient inatteignable.
+ * Jusqu'au socle 4.2, cette feuille collait la barre au bas de la fenêtre
+ * (`position: fixed`) et réservait sa hauteur sous le contenu — et huit dépôts
+ * du parc portaient la même règle, recopiée. Depuis 4.3.0, le choix se fait là
+ * où la mise en page se lit, dans `App.tsx` : `<BottomNav placement="fixed">`
+ * colle la barre, `<PageContainer reserve="bottom-nav">` dégage la place
+ * dessous, zone sûre iOS comprise. Ce fichier n'a plus rien à dire sur elle.
  */
-[data-dwc='bottom-nav'] {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 10;
-}
-
-.app-main {
-  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
-}

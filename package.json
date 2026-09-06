@@ -23,7 +23,8 @@
     "type-check": "tsc -b",
     "doctor": "pwa-doctor",
     "icons": "pwa-icons --source public/favicon.svg --out public --maskable",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "screenshots": "pwa-screenshots --wide-path reglages"
   },
   "bundleBudget": {
     "totalGzipKb": 210,
@@ -33,7 +34,7 @@
     "@axe-core/playwright": "^4.10.0",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
-    "@mister-guiiug/dev-pwa-config": "^4.3.1",
+    "@mister-guiiug/dev-pwa-config": "^4.3.2",
     "@playwright/test": "^1.56.0",
     "@tailwindcss/vite": "^4.3.0",
     "@testing-library/jest-dom": "^6.6.3",
