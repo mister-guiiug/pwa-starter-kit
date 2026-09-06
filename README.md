@@ -105,7 +105,22 @@ Chaque pièce est là parce que son absence a coûté quelque chose de mesuré :
   « Annuler » la remet **à sa place**. `ConfirmDialog` du socle est adopté par
   quatorze applications, `useUndoableState` par zéro, et **aucune** n'offrait
   d'annulation après suppression d'un enregistrement — cf.
-  [ADR 0008](./docs/adr/0008-annuler-plutot-que-confirmer.md).
+  [ADR 0008](./docs/adr/0008-annuler-plutot-que-confirmer.md) ;
+- **on peut supprimer son compte**, et la base le prouve. Dix applications du
+  parc ont des comptes, **deux** offraient une voie d'effacement. La carte
+  « Zone dangereuse » demande de **retaper son adresse** — pas un « OK », qui
+  est le même clic que celui qu'on regrette — et n'existe pas en mode local.
+  Surtout : qu'une fonction `security definer` puisse effacer dans `auth.users`
+  était **documenté et jamais prouvé** sur ce parc ; dix-huit assertions pgTAP
+  le figent, mécanisme compris — cf.
+  [ADR 0009](./docs/adr/0009-supprimer-son-compte.md) ;
+- **on écrit hors ligne**, et ce qui attend le **dit**. La file du socle
+  (`sync-queue`) enveloppe le port distant : une note écrite sans réseau est
+  retenue puis rejouée, une écriture refusée par la RLS part en lettre morte au
+  premier essai au lieu de boucler, et `SyncStatusBadge` porte l'état. Le
+  branchement d'un port sur cette file avait été écrit trois fois dans le parc
+  et jamais dans le squelette — cf.
+  [ADR 0010](./docs/adr/0010-ecrire-hors-ligne.md).
 
 ## Supabase : une variante, pas un fork
 
@@ -116,14 +131,15 @@ historiques, et divergerait en quelques semaines.
 
 Ce que la variante apporte, tout est déjà là :
 
-| Pièce                                | Ce qu'elle règle                                                                                            |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| `supabase/migrations/0001…0004`      | `profiles`, rôles, RLS **deny-by-default** avec double verrou, et le hook qui recopie le rôle dans le jeton |
-| `supabase/tests/rls.test.sql`        | treize assertions pgTAP : deux comptes ne se voient pas, le rôle arrive dans le jeton                       |
-| `supabase/config.toml`               | la pile locale, pour jouer migrations et tests depuis zéro (`pwa-supabase-test.yml`)                        |
-| `src/backend/supabase.ts`            | l'adaptateur du seul port `notes` — les autres restent locaux ; `flowType: 'pkce'`                          |
-| `src/auth/`, `src/features/account/` | le fournisseur, le formulaire — lien d'abord, mot de passe en option — et `useRole()`                       |
-| `.github/workflows/supabase-*.yml`   | tests pgTAP sur une pile jetable, migrations, et le keep-alive anti-pause du plan Free                      |
+| Pièce                                | Ce qu'elle règle                                                                                                                   |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `supabase/migrations/0001…0005`      | `profiles`, rôles, RLS **deny-by-default** avec double verrou, le hook qui recopie le rôle dans le jeton, et `delete_my_account()` |
+| `supabase/tests/*.test.sql`          | trente et une assertions pgTAP : deux comptes ne se voient pas, le rôle arrive dans le jeton, un compte s'efface vraiment          |
+| `supabase/config.toml`               | la pile locale, pour jouer migrations et tests depuis zéro (`pwa-supabase-test.yml`)                                               |
+| `src/backend/supabase.ts`            | l'adaptateur du seul port `notes` — les autres restent locaux ; `flowType: 'pkce'`                                                 |
+| `src/backend/queued-notes.ts`        | la file d'écritures hors ligne (`sync-queue` du socle) enveloppant ce port ; rien en mode local                                    |
+| `src/auth/`, `src/features/account/` | le fournisseur, le formulaire — lien d'abord, mot de passe en option — et `useRole()`                                              |
+| `.github/workflows/supabase-*.yml`   | tests pgTAP sur une pile jetable, migrations, et le keep-alive anti-pause du plan Free                                             |
 
 Pour l'activer : poser les deux variables dans **`vars`** du dépôt (jamais dans
 `secrets` — Vite les copie dans le bundle), la référence du projet en variable

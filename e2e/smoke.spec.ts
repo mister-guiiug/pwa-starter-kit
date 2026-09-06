@@ -86,6 +86,46 @@ test.describe('@critical le cadre', () => {
     await expect(page.getByText('Aucune note pour le moment.')).toBeVisible();
   });
 
+  test('hors ligne, une note ajoutée n’est pas perdue au retour du réseau', async ({
+    page,
+    context,
+  }) => {
+    // CE QUE CE TEST PROUVE, ET CE QU'IL NE PROUVE PAS.
+    //
+    // Il prouve la promesse VISIBLE : réseau coupé, l'application répond
+    // encore (service worker), le geste aboutit, il le DIT, et la note est
+    // toujours là au retour — y compris après un démarrage à froid.
+    //
+    // Il ne prouve PAS le rejeu de la file d'écritures (ADR 0010) : le
+    // squelette démarre sans configuration, ses e2e tournent donc en mode
+    // local, où il n'y a pas de réseau entre l'application et son stockage —
+    // et donc pas de file. Cette moitié-là est prouvée dans
+    // `src/backend/queued-notes.test.ts`, contre le contrat du port. C'est
+    // écrit ici pour que personne ne prenne ce test pour ce qu'il n'est pas.
+    await page.goto('/');
+    // En local il n'y a rien à attendre : l'indicateur n'est PAS rendu. Un
+    // badge qui dirait « à jour » sans jamais rien attendre serait du décor.
+    await expect(page.locator('[data-dwc="sync-status"]')).toHaveCount(0);
+
+    await context.setOffline(true);
+
+    const texte = `écrite hors ligne ${Date.now()}`;
+    await page.getByLabel('Nouvelle note').fill(texte);
+    await page.getByRole('button', { name: 'Ajouter' }).click();
+    await expect(page.getByText(texte)).toBeVisible();
+
+    // Et la coupure est ANNONCÉE : le bandeau du socle apparaît après une
+    // seconde et demie hors ligne continu — les micro-coupures ne clignotent
+    // pas. Sans lui, une écriture qui attend ressemble à une écriture faite.
+    await expect(page.locator('[data-dwc="connection-banner"]')).toBeVisible({
+      timeout: 10_000,
+    });
+
+    await context.setOffline(false);
+    await page.reload();
+    await expect(page.getByText(texte)).toBeVisible();
+  });
+
   test('la navigation atteint les quatre destinations', async ({ page }) => {
     await page.goto('/');
 
@@ -112,6 +152,16 @@ test.describe('@critical le cadre', () => {
     // la mise en service.
     await page.goto('/compte');
     await expect(page.getByText('Mode local')).toBeVisible();
+
+    // ET LA ZONE DANGEREUSE N'EXISTE PAS. Sans backend distant, il n'y a pas
+    // de compte à effacer : un bouton « Supprimer mon compte » qui n'efface
+    // rien serait pire que son absence. C'est la seule moitié de l'ADR 0009
+    // qu'un e2e sans configuration puisse prouver — l'effacement lui-même est
+    // prouvé en pgTAP, sur une base réelle.
+    await expect(page.getByTestId('zone-dangereuse')).toHaveCount(0);
+    await expect(
+      page.getByRole('button', { name: 'Supprimer mon compte' })
+    ).toHaveCount(0);
   });
 
   test('un lien profond rafraîchi sert l’app, pas la page d’erreur', async ({
