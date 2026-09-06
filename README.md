@@ -83,19 +83,32 @@ historiques, et divergerait en quelques semaines.
 
 Ce que la variante apporte, tout est déjà là :
 
-| Pièce                                | Ce qu'elle règle                                              |
-| ------------------------------------ | ------------------------------------------------------------- |
-| `supabase/migrations/0001…0003`      | `profiles`, rôles, RLS **deny-by-default** avec double verrou |
-| `supabase/tests/rls.test.sql`        | onze assertions pgTAP : deux comptes ne se voient pas         |
-| `src/backend/supabase.ts`            | l'adaptateur du seul port `notes` — les autres restent locaux |
-| `src/auth/`, `src/features/account/` | le fournisseur, le formulaire et `useRole()`                  |
-| `.github/workflows/supabase-*.yml`   | migrations, et le keep-alive anti-pause du plan Free          |
+| Pièce                                | Ce qu'elle règle                                                                                            |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `supabase/migrations/0001…0004`      | `profiles`, rôles, RLS **deny-by-default** avec double verrou, et le hook qui recopie le rôle dans le jeton |
+| `supabase/tests/rls.test.sql`        | treize assertions pgTAP : deux comptes ne se voient pas, le rôle arrive dans le jeton                       |
+| `supabase/config.toml`               | la pile locale, pour jouer migrations et tests depuis zéro (`pwa-supabase-test.yml`)                        |
+| `src/backend/supabase.ts`            | l'adaptateur du seul port `notes` — les autres restent locaux ; `flowType: 'pkce'`                          |
+| `src/auth/`, `src/features/account/` | le fournisseur, le formulaire — lien d'abord, mot de passe en option — et `useRole()`                       |
+| `.github/workflows/supabase-*.yml`   | tests pgTAP sur une pile jetable, migrations, et le keep-alive anti-pause du plan Free                      |
 
 Pour l'activer : poser les deux variables dans **`vars`** du dépôt (jamais dans
 `secrets` — Vite les copie dans le bundle), les trois secrets `SUPABASE_*` pour
 les migrations, puis appliquer `supabase/keep-alive.sql`. Sans la table
 `keep_alive`, le ping du keep-alive répond 404 **en silence**, et le projet
 s'endort quand même.
+
+Deux réglages de plus, côté projet Supabase, que ni une migration ni un
+workflow ne peuvent poser — et dont l'absence ne fait aucun bruit :
+
+- **activer le hook « Custom Access Token »** (Authentication → Hooks, ou
+  l'API de gestion : `hook_custom_access_token_uri` =
+  `pg-functions://postgres/public/custom_access_token_hook`). Sans lui, le
+  jeton ne porte aucun rôle et `useRole()` ne voit jamais un administrateur ;
+- **autoriser l'adresse de l'application comme retour de lien** (`site_url`
+  et la liste d'URL autorisées). À la création, un projet n'autorise que
+  `http://localhost:3000` : le lien de connexion part, l'utilisateur clique,
+  et n'arrive nulle part.
 
 ## Les décisions
 

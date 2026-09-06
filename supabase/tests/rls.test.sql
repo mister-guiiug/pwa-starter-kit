@@ -15,13 +15,41 @@
 -- ╚══════════════════════════════════════════════════════════════════════════╝
 
 begin;
-select plan(11);
+select plan(13);
 
--- ── Décor : deux comptes, une note chacun ────────────────────────────────
+-- ── Décor : deux comptes, une note chacun, et Bob administrateur ─────────
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'alice@exemple.test'),
   ('22222222-2222-2222-2222-222222222222', 'bob@exemple.test');
+
+-- Le rôle se pose par le serveur (ici : la session de test, sous `postgres`),
+-- jamais par une requête du client — c'est ce que vérifie le § « Ce qu'elle
+-- ne peut pas faire ».
+insert into user_roles (user_id, role)
+values ('22222222-2222-2222-2222-222222222222', 'admin');
+
+-- ── Le rôle arrive DANS le jeton, par le hook ─────────────────────────────
+--
+-- `useRole()` lit `app_metadata.roles` ; jusqu'au 05/09/2026 rien ne l'y
+-- écrivait, et le badge admin ne pouvait jamais s'afficher. Le hook de 0004
+-- est appelé par GoTrue à chaque émission ; on l'appelle ici tel quel.
+
+select is(
+  (select custom_access_token_hook(
+     '{"user_id":"22222222-2222-2222-2222-222222222222","claims":{"app_metadata":{"provider":"email"}}}'::jsonb
+   ) -> 'claims' -> 'app_metadata' -> 'roles'),
+  '["admin"]'::jsonb,
+  'le hook recopie le rôle de Bob dans le jeton, sans écraser le reste d’app_metadata'
+);
+
+select is(
+  (select custom_access_token_hook(
+     '{"user_id":"11111111-1111-1111-1111-111111111111","claims":{}}'::jsonb
+   ) -> 'claims' -> 'app_metadata' -> 'roles'),
+  '[]'::jsonb,
+  'sans rôle, un tableau vide — jamais une absence à interpréter'
+);
 
 -- Le déclencheur `handle_new_user` a créé les deux profils.
 select is(
