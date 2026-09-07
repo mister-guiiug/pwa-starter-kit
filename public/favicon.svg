@@ -1,4 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="PWA Starter Kit">
+  <!--
+    LA MARQUE DU SQUELETTE, ET CE QU'IL FAUT EN FAIRE. Ce fichier est servi
+    tel quel par l'en-tête de la page, il fait le favicon, et `npm run icons`
+    en tire les six PNG du manifeste plus l'icône maskable. Le remplacer est
+    le geste 3 du README : une application engendrée ne garde pas ce « P. ».
+
+    LA TUILE ET LE FOND DU MASKABLE VONT PAR PAIRE. Le maskable est fabriqué
+    en réduisant cette image à 87,5 % puis en comblant le pourtour d'une
+    couleur unie : l'option « bg » du script `icons`, dans `package.json`.
+    Elle doit valoir la teinte EXACTE du rectangle ci-dessous, ici
+    59,110,165 pour #3b6ea5. Sans cet accord, le générateur comble avec son
+    défaut (12,18,34) et l'icône installée porte un CADRE bleu nuit autour de
+    la tuile — c'est ce que faisait ce squelette, et donc toutes les
+    applications nées de lui.
+
+    En changeant la marque, changer les deux : le `fill` du rectangle, et les
+    trois nombres de l'option. Puis `npm run icons`, et regarder
+    `icon-maskable.png` : le pourtour ne doit pas se voir.
+
+    (Et l'option ne peut pas s'écrire ici avec ses deux tirets : XML interdit
+    le double tiret dans un commentaire, et le rasteriseur refuse le fichier.)
+
+    LA TUILE RESTE UNIE, sans dégradé : un dégradé rendrait ce raccord
+    impossible. La marque, elle, peut en porter un.
+  -->
   <rect width="64" height="64" rx="14" fill="#3b6ea5" />
   <path
     d="M20 44V20h9.5a8 8 0 0 1 0 16H26v8h-6Zm6-14h3.5a2 2 0 0 0 0-4H26v4Z"

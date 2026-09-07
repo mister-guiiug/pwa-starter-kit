@@ -193,7 +193,10 @@ Restent quatre gestes, que le générateur imprime et ne fait pas :
    branche ;
 2. inscrire l'application au catalogue du socle par une PR, sans quoi elle
    n'apparaît pas chez ses sœurs ;
-3. régénérer les icônes (`npm run icons`) depuis un nouveau `favicon.svg` ;
+3. régénérer les icônes (`npm run icons`) depuis un nouveau `favicon.svg`, en
+   accordant l'option `--bg` du script à la couleur de sa tuile — c'est elle
+   qui comble le pourtour du maskable, et un désaccord met un cadre autour de
+   l'icône installée ;
 4. supprimer la fonctionnalité d'exemple (`src/features/home/`) — elle est
    faite pour ça.
 
