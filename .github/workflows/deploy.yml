@@ -4,10 +4,11 @@
 # pages`). Redoublé dans l'appelant, GitHub refuse le fichier AVANT de créer un
 # seul job, sans autre message que « workflow file issue ».
 #
-# Aucune `build-env` ni `required-env` : ce squelette démarre sans
-# configuration, et c'est une propriété qu'il doit garder. Une app qui en a
-# besoin les ajoute ici, les `VITE_*` lues dans `vars` — jamais dans `secrets`,
-# que Vite copie de toute façon dans le bundle.
+# UNE SEULE `build-env`, et elle montre le motif : les `VITE_*` se lisent dans
+# `vars` — jamais dans `secrets`, que Vite copie de toute façon dans le bundle.
+# Le squelette démarre sans configuration et doit le rester : une variable
+# absente vaut la chaîne vide, donc cette ligne n'active rien par elle-même.
+# Pas de `required-env` : rien ici ne casse quand une variable manque.
 name: Deploy
 
 on:
@@ -26,3 +27,14 @@ jobs:
     uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-deploy.yml@v4
     with:
       use-base-path: true
+      # LE SEUL INTERRUPTEUR DE LA MESURE D'AUDIENCE, ET IL EST ICI.
+      #
+      # `pwa-deploy.yml` n'injecte QUE ce que l'appelant lui donne : sans
+      # cette ligne, poser la variable de dépôt ne change rien au build et le
+      # bandeau de consentement ne rend rien, faute d'identifiant. Relevé le
+      # 15/09/2026 : zéro dépôt sur vingt la passait.
+      #
+      # Variable absente = chaîne vide = aucune mesure. Elle n'active donc
+      # rien par elle-même : elle rend la variable capable d'agir.
+      build-env: |
+        VITE_GA_MEASUREMENT_ID=${{ vars.VITE_GA_MEASUREMENT_ID }}
