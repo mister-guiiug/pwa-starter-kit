@@ -12,6 +12,8 @@ import { BottomNav } from '@mister-guiiug/dev-pwa-config/react/bottom-nav';
 import { ThemeToggle } from '@mister-guiiug/dev-pwa-config/react/theme-toggle';
 import { ObservabilityBoundary } from '@mister-guiiug/dev-pwa-config/react/error-boundary';
 import { ConnectionBanner } from '@mister-guiiug/dev-pwa-config/react/connection-banner';
+import { ConsentBanner } from '@mister-guiiug/dev-pwa-config/react/consent-banner';
+import { usePageViews } from '@mister-guiiug/dev-pwa-config/react/use-page-views';
 import { AppUpdates } from '@mister-guiiug/dev-pwa-config/react/app-updates';
 import { registerSW } from 'virtual:pwa-register';
 import { useI18n } from './i18n/index.ts';
@@ -42,6 +44,18 @@ import { AccountScreen } from './features/account/AccountScreen.tsx';
 function Shell() {
   const { t } = useI18n();
   const { pathname } = useLocation();
+
+  /*
+   * UNE VUE DE PAGE PAR NAVIGATION. GA4 n'en envoie qu'une par chargement de
+   * document, et `initAnalytics` le configure en plus avec
+   * `send_page_view: false` pour que la première passe par ici comme les
+   * autres — sinon l'écran d'entrée serait compté deux fois. Sans ce hook,
+   * toute la navigation d'une PWA est invisible et la durée de session fausse.
+   *
+   * Il ne fait rien tant que le consentement n'est pas accordé : il se monte
+   * donc sans condition.
+   */
+  usePageViews(pathname);
 
   const nav = [
     {
@@ -104,6 +118,21 @@ function Shell() {
               d'erreur avant que ce routeur n'existe. */}
           <Route path="*" element={<HomeScreen />} />
         </Routes>
+        {/*
+          LE BANDEAU DE CONSENTEMENT, DANS LE FLUX DU CONTENU. Une `region`,
+          pas une boîte modale : il ne recouvre rien, ne piège pas le focus, et
+          l'application reste utilisable derrière. Obtenir un consentement en
+          bloquant l'écran est la figure que le RGPD appelle un « dark
+          pattern ».
+
+          IL NE REND RIEN tant que `VITE_GA_MEASUREMENT_ID` n'est pas posée sur
+          le dépôt : sans identifiant il n'y a rien à mesurer, donc rien à
+          demander. Une app engendrée depuis ce squelette part donc muette, et
+          poser la variable est le seul geste qui l'allume.
+        */}
+        <ConsentBanner
+          gaMeasurementId={import.meta.env.VITE_GA_MEASUREMENT_ID}
+        />
       </PageContainer>
 
       <BottomNav

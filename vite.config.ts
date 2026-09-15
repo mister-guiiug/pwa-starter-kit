@@ -68,7 +68,14 @@ export default defineConfig(({ command }) => {
       // l'ignore dans une balise `<meta>`, et GitHub Pages ne pose aucun
       // en-tête. Le greffon refuse la directive plutôt que d'en donner
       // l'illusion.
-      cspPlugin({ dev: command === 'serve' }),
+      cspPlugin({
+        dev: command === 'serve',
+        // Ouvre les hôtes de Google Tag Manager et de GA4. Sans cette option,
+        // le script que `ConsentBanner` injecte APRÈS l'accord serait refusé
+        // par la politique — et l'échec ne se verrait qu'en console, sur le
+        // site déployé, une fois le consentement donné.
+        analytics: true,
+      }),
 
       // Repli SPA : sans `404.html`, rafraîchir un lien profond sert la page
       // d'erreur de GitHub. Quatre apps en souffraient en production.
