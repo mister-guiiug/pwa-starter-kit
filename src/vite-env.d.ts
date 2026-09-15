@@ -15,8 +15,6 @@ interface ImportMetaEnv {
    * seul geste qui l'allume.
    */
   readonly VITE_GA_MEASUREMENT_ID?: string;
-  /** Conteneur GTM (`GTM-…`), si l'app préfère GTM à GA4 direct. */
-  readonly VITE_GTM_CONTAINER_ID?: string;
 }
 
 interface ImportMeta {
