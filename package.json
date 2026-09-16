@@ -27,7 +27,8 @@
     "screenshots": "pwa-screenshots --wide-path reglages"
   },
   "bundleBudget": {
-    "totalGzipKb": 210,
+    "_pourquoi": "Relevé de 210 à 212 le 16/09/2026. Le socle a gagné `react/privacy-notice` (dev-pwa-config#297) et, avec lui, un groupe de libellés `privacy` de quinze chaînes — du texte de conformité, plus long que les libellés d'interface habituels. `labels-core.js` importe `labels-fr.js` EN ENTIER comme dictionnaire par défaut, et les propriétés d'un objet littéral ne s'élaguent pas : toute app paie donc le groupe, qu'elle monte le panneau ou non. Mesuré en CI sur le squelette : 210,1 kB contre un budget de 210,0 — le commit précédent (4e17a9c) passait, le suivant (ae62853) non. 212 laisse ~1,9 kB, de quoi absorber une montée de dépendance ordinaire sans rouvrir ce fichier. Ce n'est PAS un coût gratuit : dix-huit des vingt et une apps du parc mesurent et monteront ce panneau. MESURER EN CI, PAS EN LOCAL : gh run view <id> -R mister-guiiug/dev-pwa-config --log | grep 'TOTAL gzip'",
+    "totalGzipKb": 212,
     "mainChunkKb": 480
   },
   "devDependencies": {
