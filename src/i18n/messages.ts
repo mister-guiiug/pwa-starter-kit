@@ -105,7 +105,6 @@ const fr = {
   about: {
     title: 'À propos',
     what: "Ce dépôt est le point de départ des applications de la famille. Il n'a pas de métier : il a le cadre.",
-    version: 'Version',
   },
 };
 
@@ -195,7 +194,6 @@ const en: typeof fr = {
   about: {
     title: 'About',
     what: 'This repository is the starting point for the family applications. It has no domain: it has the frame.',
-    version: 'Version',
   },
 };
 
