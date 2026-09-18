@@ -125,14 +125,20 @@ function Shell() {
           bloquant l'écran est la figure que le RGPD appelle un « dark
           pattern ».
 
-          IL NE REND RIEN tant que `VITE_GA_MEASUREMENT_ID` n'est pas posée sur
-          le dépôt : sans identifiant il n'y a rien à mesurer, donc rien à
-          demander. Une app engendrée depuis ce squelette part donc muette, et
-          poser la variable est le seul geste qui l'allume.
+          IL NE REND RIEN tant qu'aucun identifiant de mesure ne lui est passé :
+          sans identifiant il n'y a rien à mesurer, donc rien à demander. Une app
+          engendrée depuis ce squelette part donc muette, et lui passer la clé du
+          projet est le seul geste qui l'allume.
+
+          LA PROP EST MOMENTANÉMENT RETIRÉE, et ce n'est pas un oubli. Le parc
+          quitte Google Analytics pour PostHog en Europe (ADR 0012) : la prop
+          s'appelle désormais `posthogKey` et non plus `gaMeasurementId`. Ce
+          fichier est bâti par la CI du socle CONTRE LA BRANCHE, et par la
+          sienne contre la version PUBLIÉE — il ne peut donc nommer ni l'une ni
+          l'autre tant que la 6.0.0 n'est pas sortie. Elle revient juste après,
+          et c'est écrit dans l'ADR.
         */}
-        <ConsentBanner
-          gaMeasurementId={import.meta.env.VITE_GA_MEASUREMENT_ID}
-        />
+        <ConsentBanner />
       </PageContainer>
 
       <BottomNav
