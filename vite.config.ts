@@ -70,10 +70,11 @@ export default defineConfig(({ command }) => {
       // l'illusion.
       cspPlugin({
         dev: command === 'serve',
-        // Ouvre les hôtes de Google Tag Manager et de GA4. Sans cette option,
-        // le script que `ConsentBanner` injecte APRÈS l'accord serait refusé
-        // par la politique — et l'échec ne se verrait qu'en console, sur le
-        // site déployé, une fois le consentement donné.
+        // Ouvre les hôtes de PostHog — le nuage EUROPÉEN, `eu.i.posthog.com`
+        // (ADR 0012). Sans cette option, l'ingestion que `ConsentBanner`
+        // déclenche APRÈS l'accord serait refusée par la politique — et
+        // l'échec ne se verrait qu'en console, sur le site déployé, une fois
+        // le consentement donné.
         analytics: true,
       }),
 

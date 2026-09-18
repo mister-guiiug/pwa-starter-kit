@@ -46,11 +46,13 @@ function Shell() {
   const { pathname } = useLocation();
 
   /*
-   * UNE VUE DE PAGE PAR NAVIGATION. GA4 n'en envoie qu'une par chargement de
-   * document, et `initAnalytics` le configure en plus avec
-   * `send_page_view: false` pour que la première passe par ici comme les
-   * autres — sinon l'écran d'entrée serait compté deux fois. Sans ce hook,
-   * toute la navigation d'une PWA est invisible et la durée de session fausse.
+   * UNE VUE DE PAGE PAR NAVIGATION — ni zéro, ni deux. PostHog en envoie une
+   * au chargement ET à chaque changement d'historique quand on le laisse
+   * faire ; les apps du parc étant en `HashRouter`, chaque navigation serait
+   * comptée DEUX fois. `initAnalytics` pose donc `capture_pageview: false`
+   * pour que toutes passent par ici, la première comprise. Sans ce hook, à
+   * l'inverse, la navigation d'une PWA est invisible et la durée de session
+   * fausse.
    *
    * Il ne fait rien tant que le consentement n'est pas accordé : il se monte
    * donc sans condition.
@@ -125,20 +127,36 @@ function Shell() {
           bloquant l'écran est la figure que le RGPD appelle un « dark
           pattern ».
 
-          IL NE REND RIEN tant qu'aucun identifiant de mesure ne lui est passé :
-          sans identifiant il n'y a rien à mesurer, donc rien à demander. Une app
-          engendrée depuis ce squelette part donc muette, et lui passer la clé du
-          projet est le seul geste qui l'allume.
+          IL NE REND RIEN tant que `VITE_POSTHOG_KEY` n'est pas posée sur le
+          dépôt : sans clé il n'y a rien à mesurer, donc rien à demander. Une app
+          engendrée depuis ce squelette part donc muette, et poser la variable
+          est le seul geste qui l'allume.
 
-          LA PROP EST MOMENTANÉMENT RETIRÉE, et ce n'est pas un oubli. Le parc
-          quitte Google Analytics pour PostHog en Europe (ADR 0012) : la prop
-          s'appelle désormais `posthogKey` et non plus `gaMeasurementId`. Ce
-          fichier est bâti par la CI du socle CONTRE LA BRANCHE, et par la
-          sienne contre la version PUBLIÉE — il ne peut donc nommer ni l'une ni
-          l'autre tant que la 6.0.0 n'est pas sortie. Elle revient juste après,
-          et c'est écrit dans l'ADR.
+          LE `loader` N'EST PAS FACULTATIF EN PRATIQUE, et c'est le piège de
+          cette prop. Sans lui, le socle retombe sur un spécificateur
+          volontairement non analysable (`['posthog','js'].join('-')`) — utile
+          pour qu'une app SANS `posthog-js` construise quand même, mais dans un
+          bundle servi au navigateur cet import ne se résout pas. Le socle
+          l'attrape et se tait : le bandeau s'affiche, l'accord est donné, et
+          RIEN NE PART. C'est exactement le défaut « câblé mais muet » que ce
+          parc a déjà payé. Le passer rend l'import analysable par Vite, qui
+          émet le morceau et le charge à l'accord — pas avant.
+
+          ET C'EST LA BUILD `slim`, PAS L'ENTRÉE PAR DÉFAUT. Mesuré le
+          19/09/2026 : 50,1 kB gzip contre 97,6 pour `posthog-js` tout court.
+          Ce qu'elle laisse dehors — enregistrement de session, autocapture,
+          sondages, barre d'outils, capture d'exceptions — est exactement ce
+          que l'ADR 0012 a DÉCIDÉ de couper, et que le socle éteint déjà par
+          `OPTIONS_VIE_PRIVEE`. L'éteindre par une option et ne pas l'embarquer
+          du tout ne se valent pas : une option se rallume, un code absent non.
+          Le chemin passe par `dist/` faute de table `exports` dans le paquet ;
+          s'il changeait, le build casserait — bruyamment, ce qui est le bon
+          sens de l'échec ici.
         */}
-        <ConsentBanner />
+        <ConsentBanner
+          posthogKey={import.meta.env.VITE_POSTHOG_KEY}
+          loader={() => import('posthog-js/dist/module.slim.js')}
+        />
       </PageContainer>
 
       <BottomNav

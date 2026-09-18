@@ -4,17 +4,23 @@
 
 interface ImportMetaEnv {
   /**
-   * Identifiant de mesure GA4 (`G-…`), propre à CHAQUE application engendrée.
+   * Clé de projet PostHog (`phc_…`), nuage EUROPÉEN — ADR 0012.
    *
-   * Une propriété par site, jamais partagée : c'est ce qui rend le suivi
-   * indépendant. Deux applications sous le même identifiant mélangeraient
-   * leurs audiences sans qu'aucun rapport ne le signale.
+   * LA MÊME POUR TOUT LE PARC, et c'est délibéré : un seul projet, les
+   * applications distinguées dedans par la super-propriété `app_name` que le
+   * socle déduit du chemin de base. L'inverse — un projet par dépôt — rendait
+   * le total illisible, et c'est la décision que l'ADR 0011 avait déjà prise
+   * du temps de GA4.
+   *
+   * ELLE EST PUBLIQUE par conception : elle part dans le bundle servi par
+   * GitHub Pages. D'où `vars` et non `secrets` — une clé de projet (`phc_`)
+   * n'est pas une clé personnelle (`phx_`), qui elle ne doit jamais approcher
+   * un dépôt.
    *
    * Absente, `ConsentBanner` ne rend rien et rien n'est mesuré — l'app part
-   * donc muette, et poser la variable (en `vars`, pas en `secrets`) est le
-   * seul geste qui l'allume.
+   * donc muette, et poser la variable est le seul geste qui l'allume.
    */
-  readonly VITE_GA_MEASUREMENT_ID?: string;
+  readonly VITE_POSTHOG_KEY?: string;
 }
 
 interface ImportMeta {

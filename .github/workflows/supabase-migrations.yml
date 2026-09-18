@@ -27,7 +27,7 @@ permissions:
 jobs:
   migrate:
     if: vars.VITE_SUPABASE_URL != ''
-    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-supabase-migrate.yml@v4
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-supabase-migrate.yml@v6
     secrets:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}

@@ -24,17 +24,17 @@ permissions:
 
 jobs:
   deploy:
-    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-deploy.yml@v4
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-deploy.yml@v6
     with:
       use-base-path: true
       # LE SEUL INTERRUPTEUR DE LA MESURE D'AUDIENCE, ET IL EST ICI.
       #
       # `pwa-deploy.yml` n'injecte QUE ce que l'appelant lui donne : sans
       # cette ligne, poser la variable de dépôt ne change rien au build et le
-      # bandeau de consentement ne rend rien, faute d'identifiant. Relevé le
+      # bandeau de consentement ne rend rien, faute de clé. Relevé le
       # 15/09/2026 : zéro dépôt sur vingt la passait.
       #
       # Variable absente = chaîne vide = aucune mesure. Elle n'active donc
       # rien par elle-même : elle rend la variable capable d'agir.
       build-env: |
-        VITE_GA_MEASUREMENT_ID=${{ vars.VITE_GA_MEASUREMENT_ID }}
+        VITE_POSTHOG_KEY=${{ vars.VITE_POSTHOG_KEY }}
