@@ -26,9 +26,15 @@
     "prepare": "husky || true",
     "screenshots": "pwa-screenshots --wide-path reglages"
   },
+  "pwaDoctor": {
+    "refus": {
+      "wf-v3": "TEMPORAIRE, à retirer avec la montée en ^6.0.1. Le contrôle est juste ; c'est sa CIBLE qui est figée. `pwa-doctor` de la 6.0.0 exige encore `@v4` — la version est écrite en dur dans sa regex, exactement le défaut déjà corrigé dans `workflows.test.mjs` et manqué ici. Les références de ce dépôt sont en `@v6`, ce qui est la bonne valeur pour un dépôt qui dépend du socle 6 ; le docteur les compte donc en dette à l'envers. Correctif dans dev-pwa-config : lire le majeur depuis son propre `package.json` au lieu de le figer."
+    }
+  },
   "bundleBudget": {
-    "_pourquoi": "Relevé de 210 à 212 le 16/09/2026. Le socle a gagné `react/privacy-notice` (dev-pwa-config#297) et, avec lui, un groupe de libellés `privacy` de quinze chaînes — du texte de conformité, plus long que les libellés d'interface habituels. `labels-core.js` importe `labels-fr.js` EN ENTIER comme dictionnaire par défaut, et les propriétés d'un objet littéral ne s'élaguent pas : toute app paie donc le groupe, qu'elle monte le panneau ou non. Mesuré en CI sur le squelette : 210,1 kB contre un budget de 210,0 — le commit précédent (4e17a9c) passait, le suivant (ae62853) non. 212 laisse ~1,9 kB, de quoi absorber une montée de dépendance ordinaire sans rouvrir ce fichier. Ce n'est PAS un coût gratuit : dix-huit des vingt et une apps du parc mesurent et monteront ce panneau. MESURER EN CI, PAS EN LOCAL : gh run view <id> -R mister-guiiug/dev-pwa-config --log | grep 'TOTAL gzip'",
-    "totalGzipKb": 212,
+    "_pourquoi": "Relevé de 212 à 262 le 19/09/2026 : `posthog-js` entre dans le squelette (ADR 0012). LE COÛT EST RÉEL MAIS IL N'EST PAS PAYÉ À L'ARRIVÉE, et c'est pour le dire qu'une troisième borne apparaît ici. `totalGzipKb` additionne TOUT le JS émis, morceaux différés compris ; PostHog est chargé par le `loader` d'`App.tsx`, donc APRÈS l'accord, et un visiteur qui refuse ne le télécharge jamais. `preloadGzipKb` mesure ce que `dist/index.html` référence vraiment — 157,3 kB mesurés, INCHANGÉS par ce commit. Sans cette borne, la hausse de 212 à 262 ressemblerait à cinquante kilo-octets imposés à tout le monde. Le morceau pèse 48,9 kB gzip parce que le `loader` vise `posthog-js/dist/module.slim.js` et non l'entrée par défaut : 97,6 kB mesurés le même jour pour celle-ci, soit 48,7 kB économisés en laissant dehors l'enregistrement de session, l'autocapture, les sondages et la barre d'outils — que l'ADR 0012 a de toute façon coupés. Mesuré en local à 259,3 kB ; 262 laisse ~2,7 kB. MESURER EN CI, PAS EN LOCAL : gh run view <id> -R mister-guiiug/pwa-starter-kit --log | grep 'TOTAL gzip'",
+    "totalGzipKb": 262,
+    "preloadGzipKb": 160,
     "mainChunkKb": 480
   },
   "devDependencies": {
@@ -36,7 +42,7 @@
     "@commitlint/cli": "^21.2.2",
     "@commitlint/config-conventional": "^21.2.2",
     "@eslint/js": "^10.0.1",
-    "@mister-guiiug/dev-pwa-config": "^4.21.3",
+    "@mister-guiiug/dev-pwa-config": "^6.0.0",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.3.3",
     "@testing-library/jest-dom": "^7.0.1",
@@ -63,6 +69,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
     "lucide-react": "^1.47.0",
+    "posthog-js": "^1.434.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-router-dom": "^7.18.4",
