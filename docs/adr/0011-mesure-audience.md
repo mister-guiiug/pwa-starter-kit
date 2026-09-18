@@ -116,30 +116,68 @@ il coûte dix lignes dans le socle. Mais il fabrique **deux chiffres censés êt
 égaux** — la somme des dix-neuf et le total du parc — qui divergeront dès
 qu'une application ratera une montée, sans que rien ne dise lequel croire.
 
-**GTM.** Pas maintenant. La condition de son retour est précise : le jour où
-une balise **non-GA4** devra être posée sans release. Ce jour-là, ce sera **un
-conteneur unique**, l'identifiant de mesure passé par la couche de données, et
-l'export du conteneur committé pour qu'il se relise en PR. La capacité reste
-dans le socle (`gtmContainerId`, mode `gtm`), non exercée — elle est testée,
-elle ne coûte rien à garder, et la retirer pour la remettre serait du
-mouvement.
+**GTM, et il est RETIRÉ DU SOCLE — pas seulement écarté.**
+
+Le premier jet de cette page disait le contraire : « la capacité reste dans le
+socle, non exercée — elle est testée, elle ne coûte rien à garder ». Un relevé
+fait le même jour l'a démentie, sur un fait qui n'était pas connu en
+l'écrivant : **le compte Tag Manager ne porte plus aucun conteneur.** Les quatre
+qui existaient — un par dépôt, tous vides — ont été supprimés le 16/09. Le mode
+`gtm` du socle n'a jamais tourné en production, et il ne le peut plus : il n'y a
+plus rien à charger. Une capacité que rien n'exerce **et que rien ne peut
+exercer** n'est pas une capacité, c'est l'apparence d'une, avec des tests verts
+pour la garantir.
+
+Retirés (`dev-pwa-config` #309) : `parseGtmContainerId` — des deux modules qui
+en portaient une copie —, l'option `gtmContainerId` (`initAnalytics`,
+`useConsentChoice`, `ConsentBanner`, `ConsentSettings`, `pwaSeoPlugin`), le mode
+`gtm` et le chargement de `gtm.js`, les branches `dataLayer` de `trackEvent` et
+`setUserProperties`, la moitié GTM de `buildAnalyticsHtmlFragments` avec son
+`<iframe>` `noscript`, et la variable de build `VITE_GTM_CONTAINER_ID`.
+**C'est un majeur** : des exports disparaissent, même si aucune application du
+parc ne les utilisait.
+
+La condition du retour reste précise : le jour où une balise **non-GA4** devra
+être posée sans release. Ce jour-là, ce sera **un conteneur unique**,
+l'identifiant de mesure passé par la couche de données, et l'export du conteneur
+committé pour qu'il se relise en PR. Le rétablir coûte une centaine de lignes ;
+ce paragraphe dit lesquelles.
 
 **`cookie_path` par application.** Isolerait les identités — c'est exactement
 ce qu'on ne veut pas ici.
 
 ## Mise en œuvre
 
-L'ordre compte, parce qu'une étape ne peut pas précéder l'autre :
+L'ordre compte, parce qu'une étape ne peut pas précéder l'autre.
 
-1. Créer la propriété et le flux, poser la rétention à 14 mois, déclarer la
-   dimension `app_name`, désactiver les vues sur événement d'historique.
-   **Seul le propriétaire peut le faire** : l'Admin API demande une
-   authentification Google que lui seul détient.
-2. Publier le socle qui joint `app_name` (`initAnalytics`, `trackEvent`).
-3. Poser le nouveau `G-…` dans les dix-neuf variables `VITE_GA_MEASUREMENT_ID`,
-   en une passe.
-4. Renommer les dix-neuf anciennes propriétés `archive — <dépôt>`.
-5. Écrire la déclaration : sous-traitants, durée, responsable de traitement.
+1. ✅ **Fait le 18/09/2026.** Propriété `mister-guiiug — parc`
+   (`properties/554938331`), flux web sur `https://mister-guiiug.github.io/`,
+   **`G-TVVT0ZNC3Q`**. Rétention à 14 mois, relue après écriture. Dimension
+   `app_name` déclarée, portée événement. Vues sur événement d'historique
+   désactivées. Script idempotent : `ga4-propriete-parc.mjs`.
+2. ✅ Socle : `app_name` joint à chaque événement (#308), Tag Manager retiré
+   (#309). **Reste à publier** — une version sur `main` n'est pas publiée.
+3. Poser `G-TVVT0ZNC3Q` dans les dix-neuf variables `VITE_GA_MEASUREMENT_ID`,
+   en une passe, puis redéployer.
+4. **Vérifier la collecte dans un vrai navigateur** avant toute suite : une
+   visite, un consentement, une vue qui arrive dans la bonne propriété avec son
+   `app_name`. Rien d'irréversible avant cette preuve.
+5. Seulement alors, traiter les dix-neuf anciennes propriétés.
+6. Écrire la déclaration : sous-traitants, durée, responsable de traitement.
+
+**CE QU'ON FAIT DES DIX-NEUF ANCIENNES, ET POURQUOI PAS TOUT DE SUITE.** Relevé
+du 18/09/2026, par l'API de rapport, avant toute décision : **dix-huit d'entre
+elles collectent**, de 14 à 59 événements chacune, et `archive-multi-sites` en
+porte 3 877. Les supprimer aujourd'hui éteindrait la mesure de dix-huit sites et
+jetterait leurs données — GA4 ne sait pas déplacer un flux. Elles ne deviennent
+supprimables qu'après l'étape 4.
+
+Deux exceptions, mesurées : `miss-supatool` est à zéro événement mais **sa
+variable est posée**, donc son site est instrumenté et l'attend ; `mister-doc`
+est à zéro **et** sans variable — la seule qui ne serve déjà plus à rien. Le
+script `ga4-supprimer-inutiles.mjs` refuse toute propriété qui ne réunit pas les
+trois conditions : n'avoir jamais collecté, ne pas être déjà en corbeille, et
+qu'aucun dépôt ne vise son identifiant.
 
 `mister-doc` reste hors mesure tant que ses mentions portent leurs
 `[À compléter]`.
