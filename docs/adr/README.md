@@ -29,6 +29,7 @@ personne à la rediscuter.
 | [0008](./0008-annuler-plutot-que-confirmer.md)  | Annuler remplace confirmer : un sursis de huit secondes          |
 | [0009](./0009-supprimer-son-compte.md)          | Effacer son compte, pas seulement ses données — et le prouver    |
 | [0010](./0010-ecrire-hors-ligne.md)             | Écrire hors ligne : une file sur le port, pas dans l'adaptateur  |
+| [0011](./0011-mesure-audience.md)               | Une propriété GA4 pour le parc, l'application en dimension       |
 
 ## Quand une application s'écarte
 
