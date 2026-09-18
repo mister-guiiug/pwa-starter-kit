@@ -134,6 +134,27 @@ L'ordre compte, et la première étape n'est pas la mienne.
 5. **Vérifier dans un vrai navigateur** sur une application pilote : aucun
    script Google, un événement PostHog après consentement seulement, `app_name`
    présent. Rien d'irréversible avant cette preuve.
+
+   **Fait le 19/09/2026**, sur ce dépôt construit en production et servi
+   localement, avec la clé réelle du projet. Le mode développement ne prouverait
+   rien : `cspPlugin` y pose `'unsafe-inline'`, et ni le service worker ni le
+   chemin de base ne sont ceux du visiteur.
+
+   | ce qui était à prouver      | relevé                                                                                                                    |
+   | --------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+   | aucun script Google         | un seul script, celui de l'app ; `window.dataLayer` absent                                                                |
+   | rien avant l'accord         | **le morceau PostHog n'est même pas téléchargé** — le bandeau posé, la requête réseau se limite au bundle de l'app        |
+   | un événement après l'accord | `eu.i.posthog.com/e/` → 200, au clic sur « Accepter »                                                                     |
+   | `app_name` présent          | `app_name: "pwa-starter-kit"`, **relu côté serveur** dans l'API du projet, pas seulement dans la page                     |
+   | le refus                    | rien : pas de morceau chargé, pas de cookie PostHog, pas d'événement. Seul `dwc_consent:/pwa-starter-kit/` garde le choix |
+
+   **Et une affirmation démentie au passage.** Le socle documentait l'hôte
+   `eu-assets.i.posthog.com` en `script-src` comme une précaution, en écrivant
+   que rien n'en était chargé quand `posthog-js` est en dépendance. C'est faux :
+   `array/<clé>/config.js` en part à chaque `init`, en `initiatorType: "script"`.
+   L'hôte est nécessaire, et une CSP qui l'omettrait couperait la mesure en
+   silence.
+
 6. Écrire les mentions — un sous-traitant, une finalité, une durée, un
    responsable de traitement. C'est la raison d'être de ce chantier.
 7. **Alors seulement**, démanteler GA4 : les vingt propriétés et le compte.
