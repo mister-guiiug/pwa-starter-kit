@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "type": "module",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.23.2"
   },
   "description": "Squelette d'application PWA de la famille miss-* / mister-* : la composition que chaque app réécrivait — fournisseurs, routes, écrans de cadre, i18n, backend à repli local, mise à jour du service worker — assemblée sur @mister-guiiug/dev-pwa-config et prête à cloner.",
   "scripts": {
@@ -48,7 +48,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "@vitest/coverage-v8": "^5.0.1",
     "cross-env": "^10.1.0",
-    "eslint": "^10.10.0",
+    "eslint": "^10.11.0",
     "husky": "^9.1.7",
     "jsdom": "^30.1.0",
     "lint-staged": "^17.5.1",
