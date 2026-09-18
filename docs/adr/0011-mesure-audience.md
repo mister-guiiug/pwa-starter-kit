@@ -1,5 +1,13 @@
 # 0011 — Une propriété GA4 pour le parc, l'application en dimension
 
+> **Remplacée sur le CHOIX DE L'OUTIL par [0012](./0012-posthog-en-europe.md)**
+> (18/09/2026) : la mesure passe à PostHog en Europe, pour une raison qui n'est
+> pas la mesure mais la dette RGPD. **Tout le reste de cette page reste vrai et
+> se transpose** — un seul projet pour le parc, l'application portée par une
+> dimension plutôt que par le chemin, le consentement cloisonné par app, et les
+> pièges de comptage. Elle garde aussi la trace de pourquoi dix-neuf propriétés
+> ne pouvaient pas répondre à la question posée.
+
 ## Contexte
 
 Le besoin, énoncé le 18/09/2026 : **suivre l'usage au global et à la maille
