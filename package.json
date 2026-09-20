@@ -27,10 +27,10 @@
     "screenshots": "pwa-screenshots --wide-path reglages"
   },
   "bundleBudget": {
-    "_pourquoi": "Relevé de 212 à 262 le 19/09/2026 : `posthog-js` entre dans le squelette (ADR 0012). LE COÛT EST RÉEL MAIS IL N'EST PAS PAYÉ À L'ARRIVÉE, et c'est pour le dire qu'une troisième borne apparaît ici. `totalGzipKb` additionne TOUT le JS émis, morceaux différés compris ; PostHog est chargé par le `loader` d'`App.tsx`, donc APRÈS l'accord, et un visiteur qui refuse ne le télécharge jamais. `preloadGzipKb` mesure ce que `dist/index.html` référence vraiment — 157,3 kB mesurés, INCHANGÉS par ce commit. Sans cette borne, la hausse de 212 à 262 ressemblerait à cinquante kilo-octets imposés à tout le monde. Le morceau pèse 48,9 kB gzip parce que le `loader` vise `posthog-js/dist/module.slim.js` et non l'entrée par défaut : 97,6 kB mesurés le même jour pour celle-ci, soit 48,7 kB économisés en laissant dehors l'enregistrement de session, l'autocapture, les sondages et la barre d'outils — que l'ADR 0012 a de toute façon coupés. Mesuré en local à 259,3 kB ; 262 laisse ~2,7 kB. MESURER EN CI, PAS EN LOCAL : gh run view <id> -R mister-guiiug/pwa-starter-kit --log | grep 'TOTAL gzip'",
-    "totalGzipKb": 262,
-    "preloadGzipKb": 160,
-    "mainChunkKb": 480
+    "_pourquoi": "REPOSÉ À LA MARGE QUE LA RÈGLE DEMANDE, le 20/09/2026. Les trois bornes étaient à 0,2 à 0,6 % du poids mesuré — 479 kB sous 480, 261,0 sous 262, 159,0 sous 160 — alors que le bin qui les vérifie dit « un budget se pose à poids courant + marge », marge 10 % par défaut, et que `pwa-doctor` répète « poser le budget à +10 % ». Une marge d'un kilo-octet ne mesure plus rien : elle fait rougir LA CI DU SOCLE, qui construit ce squelette sur le paquet candidat à chaque PR, dès qu'un composant partagé gagne une ligne. Arrivé le 20/09 avec `BottomNav navigate` et `items[].load` (dev-pwa-config#326) : +1 kB brut sur le morceau principal, +0,4 kB gzip au total, et une borne rouge pour la fonctionnalité que ce squelette est justement là pour montrer. Les valeurs ci-dessous sont le relevé EN CI de `main` (run 35510079498 : 261,0 / 159,0 / 479) porté à +10 % et arrondi au kilo-octet supérieur — la formule de `pwa-bundle-budget` elle-même. MESURER EN CI, PAS EN LOCAL : gh run view <id> -R mister-guiiug/pwa-starter-kit --log | grep 'TOTAL gzip'. LE COÛT DE POSTHOG RESTE DIT, et c'est pour ça que la troisième borne existe : `totalGzipKb` additionne TOUT le JS émis, morceaux différés compris, et `posthog-js` (48,9 kB gzip — l'entrée `module.slim.js` et non l'entrée par défaut, 48,7 kB économisés) est chargé par le `loader` d'`App.tsx` APRÈS l'accord : un visiteur qui refuse ne le télécharge jamais. `preloadGzipKb` mesure ce que `dist/index.html` référence vraiment, et lui ne bouge pas avec PostHog.",
+    "totalGzipKb": 288,
+    "preloadGzipKb": 175,
+    "mainChunkKb": 527
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
