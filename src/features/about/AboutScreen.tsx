@@ -49,11 +49,18 @@ export function AboutScreen() {
           quelqu'un décrit une anomalie — version et commit — part prérempli
           dans le rapport de bug ouvert par `AppFooter issues`. */}
 
+      {/* LE SQUELETTE PREND LA BASE DU PAQUET TELLE QUELLE — pas une règle de
+          grille dans `index.css`, donc pas de `layout` à poser : une app
+          engendrée hérite de la grille responsive, qui est le bon défaut en
+          pleine page. Le repli, lui, vaut partout : dix-neuf cartes d'affilée
+          font un mur, sept lignes non. Une app qui rend cette grille dans un
+          tiroir étroit ajoutera `layout="list"`. */}
       <FamilyApps
         currentAppId={APP_ID}
         repoUrl={REPO_URL}
         showSource={false}
         showRepoLinks
+        groupBy="category"
       />
 
       <AppFooter repoUrl={REPO_URL} issues />
