@@ -83,8 +83,16 @@ function Shell() {
     },
   ];
 
+  /*
+   * L'ACCUEIL PORTE LE NOM DE L'APP, PAS CELUI DE SON PREMIER ÉCRAN. C'est le
+   * seul `h1` que lit un moteur, et le premier que voit un visiteur. Relevé du
+   * 23/09/2026 dans un navigateur vierge : le squelette y titrait « Notes »,
+   * et trois apps du parc avaient hérité du même travers — « Mes espaces »,
+   * « Connexion », le nom du dépôt. Le titre de l'écran descend d'un cran,
+   * en `h2`, dans `HomeScreen`.
+   */
   const titles: Record<string, string> = {
-    '/': t('home.title'),
+    '/': t('app.name'),
     '/reglages': t('settings.title'),
     '/compte': t('account.title'),
     '/a-propos': t('about.title'),

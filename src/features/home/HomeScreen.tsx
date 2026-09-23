@@ -23,8 +23,9 @@ const undoToastId = (id: string) => `note-supprimee-${id}`;
  * socle, et une suppression qu'on peut ANNULER.
  *
  * C'est le seul métier du squelette, et il est fait pour être supprimé — sauf
- * sa dernière ligne : le pied de page de la famille, que la règle du
- * 06/09/2026 veut sur l'accueil et sur À propos, et nulle part ailleurs.
+ * sa première ligne, la phrase qui dit ce que fait l'app, et sa dernière : le
+ * pied de page de la famille, que la règle du 06/09/2026 veut sur l'accueil et
+ * sur À propos, et nulle part ailleurs.
  */
 export function HomeScreen() {
   const { t, m, fmt } = useI18n();
@@ -107,6 +108,17 @@ export function HomeScreen() {
 
   return (
     <>
+      {/* CE QUE FAIT L'APP, EN TÊTE DE L'ACCUEIL — à garder quand l'exemple
+          part. Sous le nom de l'app (`h1` de l'en-tête), c'est le premier
+          texte que lit un visiteur, et le seul qu'un moteur associe à la page.
+          `app.tagline` est aussi le sous-titre de « À propos » : une seule
+          phrase à écrire pour une app engendrée. */}
+      <p className="mt-0 mb-6" style={{ color: 'var(--dwc-text-soft)' }}>
+        {t('app.tagline')}
+      </p>
+
+      <h2 className="mt-0 mb-3 text-lg font-semibold">{t('home.title')}</h2>
+
       <form onSubmit={submit} className="flex items-end gap-2">
         <TextField
           label={t('home.field')}
