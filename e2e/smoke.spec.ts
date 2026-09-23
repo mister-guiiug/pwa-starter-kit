@@ -11,9 +11,14 @@ import { expect, test } from '@playwright/test';
  * Ces tests passent sur un BUILD de production, service worker compris.
  */
 test.describe('@critical le cadre', () => {
-  test("l'accueil s'ouvre et porte un titre", async ({ page }) => {
+  test("l'accueil s'ouvre et porte le nom de l'app", async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Notes');
+    // Le nom de l'app, pas celui de l'écran : c'est le seul `h1` que lit un
+    // moteur. L'écran d'exemple garde son titre, un cran plus bas.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'PWA Starter Kit'
+    );
+    await expect(page.getByRole('heading', { level: 2 })).toHaveText('Notes');
   });
 
   test('une note ajoutée survit au rechargement', async ({ page }) => {

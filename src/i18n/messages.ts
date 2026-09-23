@@ -22,7 +22,8 @@
 const fr = {
   app: {
     name: 'PWA Starter Kit',
-    tagline: 'Le squelette de la famille, prêt à cloner.',
+    tagline:
+      'Le squelette des applications PWA de la famille : navigation, langues, thème, hors ligne, données locales ou Supabase. Prêt à cloner.',
   },
   nav: {
     home: 'Accueil',
@@ -111,7 +112,8 @@ const fr = {
 const en: typeof fr = {
   app: {
     name: 'PWA Starter Kit',
-    tagline: 'The family skeleton, ready to clone.',
+    tagline:
+      'The skeleton of the family’s PWA apps: navigation, languages, theme, offline, local or Supabase data. Ready to clone.',
   },
   nav: {
     home: 'Home',
