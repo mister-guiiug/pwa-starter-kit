@@ -6,10 +6,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 import { Home, Info, Settings, UserRound } from 'lucide-react';
-import { AppHeader } from '@mister-guiiug/dev-pwa-config/react/app-header';
-import { PageContainer } from '@mister-guiiug/dev-pwa-config/react/page-container';
-import { BottomNav } from '@mister-guiiug/dev-pwa-config/react/bottom-nav';
-import { ThemeToggle } from '@mister-guiiug/dev-pwa-config/react/theme-toggle';
+import { AppShell } from '@mister-guiiug/dev-pwa-config/react/app-shell';
 import { ObservabilityBoundary } from '@mister-guiiug/dev-pwa-config/react/error-boundary';
 import { ConnectionBanner } from '@mister-guiiug/dev-pwa-config/react/connection-banner';
 import { ConsentBanner } from '@mister-guiiug/dev-pwa-config/react/consent-banner';
@@ -23,12 +20,10 @@ import { AboutScreen } from './features/about/AboutScreen.tsx';
 import { AccountScreen } from './features/account/AccountScreen.tsx';
 
 /**
- * LE CADRE : en-tête, contenu borné, barre basse.
+ * LE CADRE : `AppShell` du socle (en-tête, contenu borné, barre basse).
  *
- * Les trois côtés viennent du socle. Neuf apps avaient écrit leur en-tête (de
- * 36 à 377 lignes) et la mise en page était la même partout — seul le CONTENU
- * différait. `AppHeader` ne décide rien de ce contenu : il pose le collant, la
- * zone sûre iOS, le titre en `h1` et la rangée d'actions.
+ * PROMU, PAS INVENTÉ. Ce fichier assemblait déjà `AppHeader` + `PageContainer`
+ * + `BottomNav` + le lien d'évitement — le socle a remonté la composition.
  *
  * LE PIED DE PAGE N'EST PAS ICI, ET C'EST LA RÈGLE. Rendu dans la coquille,
  * hors des routes, `<AppFooter>` suivait chaque écran — trois liens sortants
@@ -99,36 +94,15 @@ function Shell() {
   };
 
   return (
-    <>
-      {/* Premier élément focalisable de la page : sans lui, atteindre le
-          contenu au clavier demande de traverser toute la navigation. */}
-      <a href="#contenu" className="sr-only focus:not-sr-only">
-        Aller au contenu
-      </a>
-
-      <AppHeader
-        title={titles[pathname] ?? t('app.name')}
-        actions={<ThemeToggle />}
-        backHref={pathname === '/' ? undefined : '/'}
-        linkComponent={Link}
-        hrefProp="to"
-      />
-
-      <ConnectionBanner />
-
-      <PageContainer as="main" id="contenu" width="md" reserve="bottom-nav">
-        <Routes>
-          <Route path="/" element={<HomeScreen />} />
-          <Route path="/reglages" element={<SettingsScreen />} />
-          <Route path="/compte" element={<AccountScreen />} />
-          <Route path="/a-propos" element={<AboutScreen />} />
-          {/* Le repli de route rend l'accueil ; le repli de SERVEUR est le
-              `404.html` posé par `spaFallbackPlugin`. Les deux sont
-              nécessaires : sans le second, GitHub Pages sert sa propre page
-              d'erreur avant que ce routeur n'existe. */}
-          <Route path="*" element={<HomeScreen />} />
-        </Routes>
-        {/*
+    <AppShell
+      title={titles[pathname] ?? t('app.name')}
+      backHref={pathname === '/' ? undefined : '/'}
+      linkComponent={Link}
+      hrefProp="to"
+      navItems={nav}
+      beforeMain={<ConnectionBanner />}
+      afterMain={
+        /*
           LE BANDEAU DE CONSENTEMENT, DANS LE FLUX DU CONTENU. Une `region`,
           pas une boîte modale : il ne recouvre rien, ne piège pas le focus, et
           l'application reste utilisable derrière. Obtenir un consentement en
@@ -160,20 +134,25 @@ function Shell() {
           Le chemin passe par `dist/` faute de table `exports` dans le paquet ;
           s'il changeait, le build casserait — bruyamment, ce qui est le bon
           sens de l'échec ici.
-        */}
+        */
         <ConsentBanner
           posthogKey={import.meta.env.VITE_POSTHOG_KEY}
           loader={() => import('posthog-js/dist/module.slim.js')}
         />
-      </PageContainer>
-
-      <BottomNav
-        items={nav}
-        linkComponent={Link}
-        hrefProp="to"
-        placement="fixed"
-      />
-    </>
+      }
+    >
+      <Routes>
+        <Route path="/" element={<HomeScreen />} />
+        <Route path="/reglages" element={<SettingsScreen />} />
+        <Route path="/compte" element={<AccountScreen />} />
+        <Route path="/a-propos" element={<AboutScreen />} />
+        {/* Le repli de route rend l'accueil ; le repli de SERVEUR est le
+            `404.html` posé par `spaFallbackPlugin`. Les deux sont
+            nécessaires : sans le second, GitHub Pages sert sa propre page
+            d'erreur avant que ce routeur n'existe. */}
+        <Route path="*" element={<HomeScreen />} />
+      </Routes>
+    </AppShell>
   );
 }
 
