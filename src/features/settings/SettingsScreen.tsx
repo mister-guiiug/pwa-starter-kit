@@ -3,7 +3,7 @@ import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card, CardHeader } from '@mister-guiiug/dev-pwa-config/react/card';
 import { ConfirmDialog } from '@mister-guiiug/dev-pwa-config/react/confirm-dialog';
 import { SegmentedControl } from '@mister-guiiug/dev-pwa-config/react/segmented-control';
-import { ThemeToggle } from '@mister-guiiug/dev-pwa-config/react/theme-toggle';
+import { ChromePrefs } from '@mister-guiiug/dev-pwa-config/react/chrome-prefs';
 import { dateSlug, downloadText } from '@mister-guiiug/dev-pwa-config/download';
 import { useI18n } from '../../i18n/index.ts';
 import { backend, coverage } from '../../backend/index.ts';
@@ -13,7 +13,7 @@ import { configReport } from '../../app/config/env.ts';
 /**
  * L'écran de réglages : le seul écran que TOUTES les apps de la famille ont, et
  * dont la COMPOSITION reste métier — c'est pourquoi le socle livre les briques
- * (`ThemeToggle`, `AppVersion`, `FamilyApps`, `ConfirmDialog`, `downloadText`)
+ * (`ChromePrefs`, `AppVersion`, `FamilyApps`, `ConfirmDialog`, `downloadText`)
  * et non l'écran. Onze apps en ont un, de 142 à 728 lignes.
  *
  * Ce qu'il montre ici et qui manque partout ailleurs : **le diagnostic de
@@ -78,20 +78,17 @@ export function SettingsScreen() {
     <div className="flex flex-col gap-4">
       <Card>
         <CardHeader title={t('settings.appearance')} />
-        <ThemeToggle />
-      </Card>
-
-      <Card>
-        <CardHeader title={t('settings.language')} />
-        <SegmentedControl
-          value={locale}
-          onChange={value => setLocale(value as typeof locale)}
-          ariaLabel={t('settings.language')}
-          options={locales.map(code => ({
-            value: code,
-            label: code.toUpperCase(),
-          }))}
-        />
+        <ChromePrefs label={t('settings.appearance')}>
+          <SegmentedControl
+            value={locale}
+            onChange={value => setLocale(value as typeof locale)}
+            ariaLabel={t('settings.language')}
+            options={locales.map(code => ({
+              value: code,
+              label: code.toUpperCase(),
+            }))}
+          />
+        </ChromePrefs>
       </Card>
 
       <Card>

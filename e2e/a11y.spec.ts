@@ -10,15 +10,15 @@ import { expectNoA11yViolations } from '@mister-guiiug/dev-pwa-config/playwright
 test.describe('@a11y accessibilité', () => {
   test("page d'accueil sans violation WCAG A/AA", async ({ page }) => {
     await page.goto('/');
+    await expect(page.locator('[data-dwc="app-shell-skip"]')).toBeAttached();
+    await expect(page.locator('main#contenu')).toBeVisible();
     await expectNoA11yViolations(page, AxeBuilder, expect);
   });
 
-  // Exemple : scoper à une zone, ou ignorer une règle connue temporairement.
-  // test('formulaire principal', async ({ page }) => {
-  //   await page.goto('/');
-  //   await expectNoA11yViolations(page, AxeBuilder, expect, {
-  //     include: 'main',
-  //     disableRules: ['color-contrast'], // à lever dès que corrigé
-  //   });
-  // });
+  test('À propos : coquille + FamilyAbout sans violation', async ({ page }) => {
+    await page.goto('/a-propos');
+    await expect(page.locator('[data-dwc="family-about"]')).toBeVisible();
+    await expect(page.locator('[data-dwc="app-footer"]')).toBeVisible();
+    await expectNoA11yViolations(page, AxeBuilder, expect);
+  });
 });
