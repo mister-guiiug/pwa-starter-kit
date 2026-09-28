@@ -2,8 +2,8 @@
 
 Le **squelette** des applications PWA de la famille `miss-*` / `mister-*` : la
 composition que chaque application réécrivait, assemblée une fois sur
-[`@mister-guiiug/dev-pwa-config`](https://github.com/mister-guiiug/dev-pwa-config)
-et prête à cloner.
+[`@mister-guiiug/dev-pwa-config`](https://github.com/mister-guiiug/dev-pwa-config),
+et dont le générateur tire chaque nouvelle application.
 
 Il n'a pas de métier. Il a le **cadre** — et les décisions qui vont avec.
 
@@ -48,15 +48,15 @@ page publique qu'on ouvre sans compte.
 
 ## Vérifier
 
-| Commande              | Ce qu'elle vérifie                                                            |
-| --------------------- | ----------------------------------------------------------------------------- |
-| `npm run lint`        | ESLint du socle (react-hooks, jsx-a11y, react-refresh)                        |
-| `npm run type-check`  | TypeScript strict, `tsc -b`                                                   |
-| `npm test`            | Vitest — le magasin, du geste jusqu'au stockage relu                          |
-| `npm run test:e2e`    | Playwright — le cadre, sur un **build de production**                         |
-| `npm run build`       | `tsc -b`, Vite, budget de poids, puis `pwa-doctor --strict`                   |
-| `npm run doctor`      | La conformité au parc, sans faire échouer                                     |
-| `npm run screenshots` | Régénère les captures du manifeste — `pwa-screenshots` du socle, sur un build |
+| Commande              | Ce qu'elle vérifie                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `npm run lint`        | ESLint du socle (react-hooks, jsx-a11y, react-refresh)                                     |
+| `npm run type-check`  | TypeScript strict, `tsc -b`                                                                |
+| `npm test`            | Vitest : le magasin des notes, la file hors ligne, `useRole()` et la suppression de compte |
+| `npm run test:e2e`    | Playwright : le cadre, sur un **build de production**                                      |
+| `npm run build`       | `tsc -b`, Vite, budget de poids, puis `pwa-doctor --strict`                                |
+| `npm run doctor`      | La conformité au parc : échoue sur un défaut, pas sur une dette                            |
+| `npm run screenshots` | Régénère les captures du manifeste par `pwa-screenshots` du socle, sur un build            |
 
 `npm run build` échoue si le poids dépasse le budget **ou** si `pwa-doctor`
 trouve la moindre dette. C'est délibéré : ce dépôt est la définition exécutable
@@ -78,8 +78,9 @@ Chaque pièce est là parce que son absence a coûté quelque chose de mesuré :
   de réglages ;
 - **`components.css`** est importé : sans lui, les composants du socle sont
   nus, ça compile, les tests passent, et l'écran est cassé ;
-- **la barre basse est collée par `placement="fixed"`** et le contenu réservé
-  par `reserve="bottom-nav"` : huit dépôts recopiaient la même règle CSS, et
+- **la barre basse est collée, et le contenu réservé dessous, par `AppShell`**
+  du socle, dont ce sont les défauts (`navPlacement: 'fixed'`, d'où
+  `reserve: 'bottom-nav'`) : huit dépôts recopiaient la même règle CSS, et
   chaque copie pouvait diverger sur la zone sûre iOS ;
 - **les captures du manifeste sont lues dans `public/screenshots`** et les
   couleurs dans `src/index.css` : `vite.config.ts` ne les recopie plus, et
@@ -142,13 +143,26 @@ Ce que la variante apporte, tout est déjà là :
 | `.github/workflows/supabase-*.yml`   | tests pgTAP sur une pile jetable, migrations, et le keep-alive anti-pause du plan Free                                             |
 
 Pour l'activer : poser les deux variables dans **`vars`** du dépôt (jamais dans
-`secrets` — Vite les copie dans le bundle), la référence du projet en variable
-aussi (`SUPABASE_PROJECT_ID` : elle est dans l'URL), deux secrets pour les
-migrations (`SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` — par le
-propriétaire), puis appliquer `supabase/keep-alive.sql`. Sans la table
-`keep_alive`, le ping du keep-alive répond 404 **en silence**, et le projet
-s'endort quand même. La procédure complète, geste par geste et avec ses
-variantes, est dans
+`secrets` : Vite les copie dans le bundle), **et les passer au build**.
+`pwa-deploy.yml` n'injecte que ce que l'appelant lui donne, et le `deploy.yml`
+de ce dépôt ne lui passe que `VITE_POSTHOG_KEY` : sans les deux lignes
+ci-dessous, le site publié reste en local, pendant que migrations et
+keep-alive, qui lisent `vars` directement, visent bien le projet.
+
+```yaml
+build-env: |
+  VITE_POSTHOG_KEY=${{ vars.VITE_POSTHOG_KEY }}
+  VITE_SUPABASE_URL=${{ vars.VITE_SUPABASE_URL }}
+  VITE_SUPABASE_ANON_KEY=${{ vars.VITE_SUPABASE_ANON_KEY }}
+```
+
+Les nommer aussi en `required-env` arrête le déploiement quand l'une manque.
+Puis la référence du projet en variable (`SUPABASE_PROJECT_ID` : elle est dans
+l'URL), deux secrets pour les migrations (`SUPABASE_ACCESS_TOKEN`,
+`SUPABASE_DB_PASSWORD`, par le propriétaire), et appliquer
+`supabase/keep-alive.sql`. Sans la table `keep_alive`, le ping du keep-alive
+répond 404 et le workflow rougit ; le projet s'endort quand même. La procédure
+complète, geste par geste et avec ses variantes, est dans
 [PARAMETRAGE.md](https://github.com/mister-guiiug/dev-pwa-config/blob/main/PARAMETRAGE.md)
 du socle.
 
@@ -174,20 +188,35 @@ C'est la seule différence qui compte.
 
 ## Partir de là
 
-**Ne clonez pas ce dépôt** — appelez le générateur, qui en tire une archive et
+**Ne clonez pas ce dépôt** : appelez le générateur, qui en tire une archive et
 la met à votre nom :
 
 ```bash
 npx github:mister-guiiug/create-lg-pwa-app miss-exemple --publish
 ```
 
-[`create-lg-pwa-app`](https://github.com/mister-guiiug/create-lg-pwa-app)
-substitue l'identité partout, écrit le lockfile avec **npm 10** — celle du
-runner, sans quoi la CI rougit au premier push —, fait le premier commit, crée
-le dépôt public et active Pages **par un PUT**, seule forme qui empêche Jekyll
-de republier le README à la place de l'application.
+**Sans `--from`, il ne part pas de ce que décrit ce README**, mais de la
+dernière étiquette du squelette : `v1.2.0`, posée le 06/09/2026, soixante-six
+commits derrière `main` au 28/09. Elle est sur le socle 4 et ses workflows
+`@v4`, n'a ni l'annulation des suppressions, ni la suppression de compte, ni la
+file hors ligne, ni la mesure d'audience, et rend encore le pied de page dans
+la coquille. `--from main` part de la pointe.
 
-Restent quatre gestes, que le générateur imprime et ne fait pas :
+[`create-lg-pwa-app`](https://github.com/mister-guiiug/create-lg-pwa-app)
+substitue l'identifiant et le nom affiché, installe les dépendances avec
+**npm 10.9.8**, construit l'application, fait le premier commit, crée le dépôt
+public et active Pages **par un PUT**, seule forme qui empêche Jekyll de
+republier le README à la place de l'application. Deux réserves, qu'il ne traite
+pas encore :
+
+- la CI de la famille rejoue le lockfile en npm 11 (Node 26.10.0), et npm 10
+  retire les champs `libc` qu'écrit npm 11 et que porte le lockfile de ce
+  dépôt ;
+- le nom court « Starter Kit » (`apple-mobile-web-app-title` d'`index.html`)
+  n'est pas remplacé, pas plus que la page de `content/pages/` et l'image
+  `public/og-image.jpg`, qui présentent le squelette.
+
+Restent cinq gestes, que le générateur imprime et ne fait pas :
 
 1. `node scripts/apply-rulesets.mjs <id>` depuis le socle, pour protéger la
    branche ;
@@ -197,11 +226,24 @@ Restent quatre gestes, que le générateur imprime et ne fait pas :
    accordant l'option `--bg` du script à la couleur de sa tuile — c'est elle
    qui comble le pourtour du maskable, et un désaccord met un cadre autour de
    l'icône installée ;
-4. supprimer la fonctionnalité d'exemple (`src/features/home/`) — elle est
-   faite pour ça.
+4. remplacer la fonctionnalité d'exemple de `src/features/home/`, en gardant
+   l'écran : son accroche (`app.tagline`) et le pied de page de la famille, que
+   `pwa-doctor --strict` exige sur l'accueil. Supprimer le dossier retirerait
+   aussi la route `/`. Le générateur le dit quand l'accueil engendré les porte ;
+5. relire la description (la meta d'`index.html`, `app.tagline` et
+   `about.what` de `src/i18n/messages.ts`) et traduire l'anglais marqué
+   `TODO traduire`.
 
-À la main, la substitution reste courte : `pwa-starter-kit` n'est déclaré
-qu'**une fois**, dans `src/app/links.ts` et `vite.config.ts`.
+Pour une application Supabase, il imprime aussi ce qui manque en silence
+(variables, secrets, table `keep_alive`, adresse de retour du lien, hook de
+rôle), mais pas encore les lignes `build-env` décrites plus haut.
+
+À la main, la substitution n'est pas courte : `pwa-starter-kit` figure dans une
+dizaine de fichiers, dont la clé du stockage local (`src/backend/local.ts`) et
+le préfixe de la file (`src/backend/queued-notes.ts`). Une copie qui les
+garderait partagerait ses données locales avec le squelette, sur l'origine
+`mister-guiiug.github.io` commune à toute la famille. Le nom affiché, lui, est
+dans `index.html` et `src/i18n/messages.ts`.
 
 ## Licence
 
