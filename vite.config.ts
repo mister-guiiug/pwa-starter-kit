@@ -92,7 +92,19 @@ export default defineConfig(({ command }) => {
       //     `wide.png`), dimensions comprises. Elles décident de l'interface
       //     d'installation — une fiche au lieu d'une ligne et un bouton — et
       //     `npm run screenshots` les régénère depuis un build.
-      VitePWA(pwaBaseOptions({ id: APP_ID })),
+      // Le squelette n'est pas au catalogue : sans `name`, le manifeste prend
+      // l'identifiant (« pwa-starter-kit ») et n'a pas de description — relevé
+      // de l'audit SEO du 29/09/2026 (C12). Une app générée remplace ces trois
+      // valeurs par les siennes, ou s'inscrit au catalogue.
+      VitePWA(
+        pwaBaseOptions({
+          id: APP_ID,
+          name: 'PWA Starter Kit',
+          shortName: 'Starter Kit',
+          description:
+            'Squelette d’application web installable : React, Vite, TypeScript, hors ligne, i18n FR/EN et Supabase en option.',
+        })
+      ),
 
       ...(analyze
         ? [
