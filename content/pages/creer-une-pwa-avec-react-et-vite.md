@@ -1,6 +1,9 @@
 ---
 title: Créer une PWA avec React et Vite : les étapes et un squelette
 description: Créer une PWA avec React et Vite : manifeste, service worker, icônes, mises à jour, routage et déploiement, pas à pas. Et un squelette libre pour démarrer.
+date: 2026-09-25
+updated: 2026-09-29
+answer: Pour créer une PWA avec React et Vite, on ajoute vite-plugin-pwa, qui génère le manifeste et le service worker. On fournit des icônes de 192 et 512 pixels, dont une maskable, on choisit la stratégie de mise à jour, on règle le sous-chemin, puis on teste sur un build, car le service worker est inactif en développement.
 ---
 
 # Créer une PWA avec React et Vite
@@ -40,7 +43,7 @@ PWA Starter Kit est le squelette des applications de la famille mister-guiiug : 
 
 ## Démarrer depuis le squelette
 
-Le dépôt recommande de ne pas le cloner, mais de passer par son générateur : `npx github:mister-guiiug/create-lg-pwa-app mon-app`. Il remplace le nom partout, installe les dépendances, construit l'application et fait le premier commit. Avec `--publish`, il crée aussi le dépôt public et active GitHub Pages.
+Le dépôt recommande de ne pas le cloner, mais de passer par son générateur : `npx github:mister-guiiug/create-lg-pwa-app mon-app --from main`. Sans `--from main`, le générateur part de la dernière étiquette publiée du squelette, qui peut être en retard sur ce qui est décrit ici : à la date de mise à jour, il y manque la suppression annulable et la file hors ligne. Le générateur reprend l'identifiant et le nom affiché, installe les dépendances, construit l'application et fait le premier commit. Avec `--publish`, il crée aussi le dépôt public et active GitHub Pages.
 
 Deux précautions. La bibliothèque partagée est publiée sur GitHub Packages, qui exige un jeton même pour un paquet public : exportez `NODE_AUTH_TOKEN` (un jeton GitHub avec le droit `read:packages`) avant `npm install`. Et le squelette est pensé d'abord pour les applications de la famille. Son code est sous licence MIT : lisez-le, reprenez ce qui vous sert.
 
@@ -61,3 +64,10 @@ Parce qu'un rechargement automatique peut tomber au milieu d'une saisie. Avec `p
 ### Peut-on utiliser le squelette sans Supabase ?
 
 Oui. Il démarre sans aucune configuration, en mode local, et le dit dans ses réglages. Supabase n'est qu'un adaptateur qui s'active quand ses deux variables sont présentes.
+
+## Sources
+
+- [Service workers en développement, vite-plugin-pwa](https://vite-pwa-org.netlify.app/guide/development) : le service worker est désactivé par défaut en développement.
+- [API Service Worker, MDN](https://developer.mozilla.org/fr/docs/Web/API/Service_Worker_API) : contexte sécurisé, `localhost` compris.
+- [Icônes maskable, web.dev](https://web.dev/articles/maskable-icon) : zone sûre d'un rayon de 40 % de la largeur.
+- [Déployer un site statique, Vite](https://vite.dev/guide/static-deploy) : l'option `base` pour GitHub Pages.
