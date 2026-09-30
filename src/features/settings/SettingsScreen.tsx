@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { Card, CardHeader } from '@mister-guiiug/dev-pwa-config/react/card';
 import { ConfirmDialog } from '@mister-guiiug/dev-pwa-config/react/confirm-dialog';
+import { ConsentSection } from '@mister-guiiug/dev-pwa-config/react/consent-section';
 import { SegmentedControl } from '@mister-guiiug/dev-pwa-config/react/segmented-control';
 import { ChromePrefs } from '@mister-guiiug/dev-pwa-config/react/chrome-prefs';
 import { dateSlug, downloadText } from '@mister-guiiug/dev-pwa-config/download';
@@ -142,6 +143,21 @@ export function SettingsScreen() {
             {t('settings.importFailed', { error })}
           </p>
         )}
+      </Card>
+
+      {/* LA MESURE D’AUDIENCE SE RETIRE ICI, EN UN CLIC, comme elle s’accepte
+          au bandeau (RGPD, art. 7.3). Relevé du 29/09/2026 : dix-huit apps
+          mesuraient après consentement, aucune ne permettait d’y revenir.
+          Mêmes clé et chargeur que le bandeau d’`App.tsx`, titre au rang des
+          `CardHeader`. Sans clé, la section ne rend rien : `empty:hidden`
+          retire alors la carte restée vide. */}
+      <Card className="empty:hidden">
+        <ConsentSection
+          posthogKey={import.meta.env.VITE_POSTHOG_KEY}
+          loader={() => import('posthog-js/dist/module.slim.js')}
+          headingLevel={3}
+          titleClassName="text-fluid-base font-semibold"
+        />
       </Card>
 
       <ConfirmDialog
