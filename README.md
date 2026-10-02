@@ -203,18 +203,19 @@ file hors ligne, ni la mesure d'audience, et rend encore le pied de page dans
 la coquille. `--from main` part de la pointe.
 
 [`create-lg-pwa-app`](https://github.com/mister-guiiug/create-lg-pwa-app)
-substitue l'identifiant et le nom affiché, installe les dépendances avec
-**npm 10.9.8**, construit l'application, fait le premier commit, crée le dépôt
-public et active Pages **par un PUT**, seule forme qui empêche Jekyll de
-republier le README à la place de l'application. Deux réserves, qu'il ne traite
-pas encore :
+substitue l'identifiant, le nom affiché et le nom court « Starter Kit », qui
+devient le nom affiché : c'est l'étiquette de l'icône installée (`shortName` de
+`vite.config.ts` pour Android, `apple-mobile-web-app-title` d'`index.html` pour
+iOS ; create-lg-pwa-app#16). Il installe les dépendances avec **npm 10.9.8**,
+construit l'application, fait le premier commit, crée le dépôt public et active
+Pages **par un PUT**, seule forme qui empêche Jekyll de republier le README à la
+place de l'application. Deux réserves, qu'il ne traite pas encore :
 
 - la CI de la famille rejoue le lockfile en npm 11 (Node 26.10.0), et npm 10
   retire les champs `libc` qu'écrit npm 11 et que porte le lockfile de ce
   dépôt ;
-- le nom court « Starter Kit » (`apple-mobile-web-app-title` d'`index.html`)
-  n'est pas remplacé, pas plus que la page de `content/pages/` et l'image
-  `public/og-image.jpg`, qui présentent le squelette.
+- la page de `content/pages/` et l'image `public/og-image.jpg` présentent
+  encore le squelette.
 
 Restent cinq gestes, que le générateur imprime et ne fait pas :
 
