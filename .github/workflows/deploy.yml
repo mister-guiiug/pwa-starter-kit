@@ -9,6 +9,8 @@
 # Le squelette démarre sans configuration et doit le rester : une variable
 # absente vaut la chaîne vide, donc cette ligne n'active rien par elle-même.
 # Pas de `required-env` : rien ici ne casse quand une variable manque.
+#
+# Aligné sur config/env.manifest.json (`pwa-env sync`).
 name: Deploy
 
 on:
@@ -37,4 +39,8 @@ jobs:
       # Variable absente = chaîne vide = aucune mesure. Elle n'active donc
       # rien par elle-même : elle rend la variable capable d'agir.
       build-env: |
+        VITE_BACKEND=${{ vars.VITE_BACKEND }}
         VITE_POSTHOG_KEY=${{ vars.VITE_POSTHOG_KEY }}
+        VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
+        VITE_SUPABASE_ANON_KEY=${{ vars.VITE_SUPABASE_ANON_KEY }}
+        VITE_SUPABASE_URL=${{ vars.VITE_SUPABASE_URL }}
