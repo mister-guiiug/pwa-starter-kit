@@ -1,7 +1,7 @@
 -- Table « keep_alive » pour l'anti-pause Supabase Free.
 -- À appliquer une fois PAR PROJET (SQL editor du dashboard, ou migration).
 -- Le workflow réutilisable pwa-supabase-keepalive.yml fait un SELECT anon
--- dessus tous les ~3 jours → vraie requête DB → reset du compteur d'inactivité.
+-- dessus chaque jour → vraie requête DB → reset du compteur d'inactivité.
 -- Aucune donnée sensible ; l'anon key est protégée par cette policy en lecture.
 
 create table if not exists public.keep_alive (
