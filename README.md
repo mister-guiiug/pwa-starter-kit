@@ -211,7 +211,7 @@ construit l'application, fait le premier commit, crée le dépôt public et acti
 Pages **par un PUT**, seule forme qui empêche Jekyll de republier le README à la
 place de l'application. Deux réserves, qu'il ne traite pas encore :
 
-- la CI de la famille rejoue le lockfile en npm 11 (Node 26.10.0), et npm 10
+- la CI de la famille rejoue le lockfile en npm 11 (Node 26.13.0), et npm 10
   retire les champs `libc` qu'écrit npm 11 et que porte le lockfile de ce
   dépôt ;
 - la page de `content/pages/` et l'image `public/og-image.jpg` présentent
