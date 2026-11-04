@@ -18,6 +18,13 @@ const log = createLogger('supabase');
  * `undefined`, et c'est ce que l'écran de réglages affiche.
  */
 export const supabase = createSupabaseClientFactory<SupabaseLike>({
+  // L'ENVIRONNEMENT SE DONNE : `import.meta.env` n'est remplacé par Vite que dans
+  // le code de l'application, pas dans le socle, et la fabrique lit `{}` par
+  // défaut. Sans cette ligne, `getClient()` répond « configuration manquante »
+  // alors que les variables sont dans le bundle : l'écran Compte s'affiche (le
+  // sélecteur de backend lit bien l'env), mais la connexion échoue. Payé par
+  // mister-settle (07/09), miss-holi-voyage et miss-arcade (04/11/2026).
+  env: import.meta.env,
   // `flowType: 'pkce'` N'EST PAS UN RÉGLAGE DE SÉCURITÉ ICI, C'EST UNE
   // NÉCESSITÉ DE ROUTAGE. La connexion par lien renvoie, en flux implicite,
   // le jeton dans le FRAGMENT (`#access_token=…`) — l'endroit exact où un
