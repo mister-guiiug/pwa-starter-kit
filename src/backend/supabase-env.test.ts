@@ -3,11 +3,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 /**
  * La fabrique Supabase de l'application lit-elle l'environnement Vite ?
  *
- * Le socle lit `{}` quand on ne lui passe pas `env`. L'oubli ne se voit qu'en
- * production : l'écran Compte s'affiche, puis « Recevoir un lien » échoue sur
- * « configuration manquante », alors que l'adresse du projet est dans le
- * bundle. Ce test importe le VRAI module, avec des variables posées, et exige
- * qu'il les ait lues.
+ * Jusqu'au socle 6.28.4, la fabrique lisait `{}` quand on ne lui passait pas
+ * `env` : l'écran Compte s'affichait, puis « Recevoir un lien » échouait sur
+ * « configuration manquante », alors que l'adresse du projet était dans le
+ * bundle (mister-settle, miss-holi-voyage, miss-arcade). Le socle lit
+ * désormais l'environnement Vite seul (dev-pwa-config#482), mais pas sous
+ * Vitest, qui l'exécute sans Vite. Ce test importe donc le VRAI module, avec
+ * des variables posées par `vi.stubEnv`, et exige qu'il les ait lues.
  */
 afterEach(() => {
   vi.unstubAllEnvs();
