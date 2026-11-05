@@ -48,6 +48,13 @@ export function authAdapter(): object | null {
         {},
         {
           get(_cible, methode) {
+            // SAUF LA CASE DE SESSION, rendue tout de suite : hors ligne,
+            // l'adaptateur du socle lit la session sans appeler le SDK, et
+            // sans ce nom il prendrait la première case `sb-*` d'un
+            // `localStorage` que toute la famille partage — peut-être la
+            // session d'une autre app. La fabrique la connaît avant le SDK
+            // (socle 6.31.0).
+            if (methode === 'storageKey') return supabase.storageKey();
             return async (...args: unknown[]) => {
               const client = (await supabase.getClient()) as {
                 auth: Record<string, (...a: unknown[]) => unknown>;
