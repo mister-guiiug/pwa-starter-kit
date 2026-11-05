@@ -112,7 +112,16 @@ export const useNotes = create<NotesState>((set, get) => ({
   async load() {
     try {
       const snapshot = await backend.notes.load();
-      set({ notes: snapshot.notes, ready: true, error: null });
+      // LA NOTE EN SURSIS A QUITTÉ L'ÉCRAN, et une relecture ne la rend pas :
+      // la base l'a encore, puisque rien n'est écrit avant `UNDO_MS`. Le
+      // retour du réseau relit tout seul (ADR 0013) ; sans ce filtre, elle
+      // réapparaissait sous la notification « Note supprimée ».
+      const enSursis = get().pending?.note.id;
+      set({
+        notes: snapshot.notes.filter(n => n.id !== enSursis),
+        ready: true,
+        error: null,
+      });
     } catch (cause) {
       log.error('lecture des notes', { cause });
       set({

@@ -80,6 +80,27 @@ describe('le magasin de notes', () => {
     expect(useNotes.getState().pending).toBeNull();
   });
 
+  it('une relecture pendant le sursis ne fait pas revenir la note', async () => {
+    // LE RETOUR DU RÉSEAU RELIT (`StaleCopy`, ADR 0013), et la base a encore
+    // la note : rien n'est écrit avant `UNDO_MS`. Sans ce filtre, la note
+    // supprimée réapparaissait sous la notification « Note supprimée » — puis
+    // restait affichée une fois la suppression écrite.
+    vi.useFakeTimers();
+    await useNotes.getState().add('à garder');
+    await useNotes.getState().add('en sursis');
+    useNotes.getState().remove(useNotes.getState().notes[0]!.id);
+
+    await useNotes.getState().load();
+    expect(useNotes.getState().notes.map(n => n.text)).toEqual(['à garder']);
+
+    // Et « Annuler » la remet quand même à sa place.
+    useNotes.getState().undoRemove(useNotes.getState().pending!.note.id);
+    expect(useNotes.getState().notes.map(n => n.text)).toEqual([
+      'en sursis',
+      'à garder',
+    ]);
+  });
+
   it('annulée, la note revient À SA PLACE et rien n’a été écrit', async () => {
     vi.useFakeTimers();
     const efface = vi.spyOn(backend.notes, 'remove');

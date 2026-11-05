@@ -48,15 +48,15 @@ page publique qu'on ouvre sans compte.
 
 ## Vérifier
 
-| Commande              | Ce qu'elle vérifie                                                                         |
-| --------------------- | ------------------------------------------------------------------------------------------ |
-| `npm run lint`        | ESLint du socle (react-hooks, jsx-a11y, react-refresh)                                     |
-| `npm run type-check`  | TypeScript strict, `tsc -b`                                                                |
-| `npm test`            | Vitest : le magasin des notes, la file hors ligne, `useRole()` et la suppression de compte |
-| `npm run test:e2e`    | Playwright : le cadre, sur un **build de production**                                      |
-| `npm run build`       | `tsc -b`, Vite, budget de poids, puis `pwa-doctor --strict`                                |
-| `npm run doctor`      | La conformité au parc : échoue sur un défaut, pas sur une dette                            |
-| `npm run screenshots` | Régénère les captures du manifeste par `pwa-screenshots` du socle, sur un build            |
+| Commande              | Ce qu'elle vérifie                                                                                                      |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `npm run lint`        | ESLint du socle (react-hooks, jsx-a11y, react-refresh)                                                                  |
+| `npm run type-check`  | TypeScript strict, `tsc -b`                                                                                             |
+| `npm test`            | Vitest : le magasin des notes, la file hors ligne, la copie de lecture, la CSP, `useRole()` et la suppression de compte |
+| `npm run test:e2e`    | Playwright : le cadre, sur un **build de production** — rouvert hors ligne compris                                      |
+| `npm run build`       | `tsc -b`, Vite, budget de poids, puis `pwa-doctor --strict`                                                             |
+| `npm run doctor`      | La conformité au parc : échoue sur un défaut, pas sur une dette                                                         |
+| `npm run screenshots` | Régénère les captures du manifeste par `pwa-screenshots` du socle, sur un build                                         |
 
 `npm run build` échoue si le poids dépasse le budget **ou** si `pwa-doctor`
 trouve la moindre dette. C'est délibéré : ce dépôt est la définition exécutable
@@ -121,7 +121,17 @@ Chaque pièce est là parce que son absence a coûté quelque chose de mesuré :
   premier essai au lieu de boucler, et `SyncStatusBadge` porte l'état. Le
   branchement d'un port sur cette file avait été écrit trois fois dans le parc
   et jamais dans le squelette — cf.
-  [ADR 0010](./docs/adr/0010-ecrire-hors-ligne.md).
+  [ADR 0010](./docs/adr/0010-ecrire-hors-ligne.md). Une coupure que
+  `navigator.onLine` ne voit pas — le Wi-Fi d'un train — n'use plus la note :
+  seul un serveur qui répond mal la fait mourir, au cinquième essai ;
+- **on relit hors ligne** le dernier état connu. En mode Supabase, chaque
+  lecture réussie est copiée dans IndexedDB, revalidée par le schéma au retour,
+  resservie quand le réseau manque — et l'écran dit qu'il montre une copie, et
+  de quand. Elle est purgée à la déconnexion. Jusqu'au 05/11/2026, un
+  commentaire promettait que « le service worker répond » : rien ne répondait —
+  cf. [ADR 0013](./docs/adr/0013-lire-hors-ligne.md). L'e2e `hors-ligne` rouvre
+  la build de production sans réseau, l'essai qui a trouvé trois applications
+  publiées incapables de démarrer.
 
 ## Supabase : une variante, pas un fork
 
@@ -139,6 +149,8 @@ Ce que la variante apporte, tout est déjà là :
 | `supabase/config.toml`               | la pile locale, pour jouer migrations et tests depuis zéro (`pwa-supabase-test.yml`)                                               |
 | `src/backend/supabase.ts`            | l'adaptateur du seul port `notes` — les autres restent locaux ; `flowType: 'pkce'`                                                 |
 | `src/backend/queued-notes.ts`        | la file d'écritures hors ligne (`sync-queue` du socle) enveloppant ce port ; rien en mode local                                    |
+| `src/backend/cached-notes.ts`        | la copie de lecture (IndexedDB, revalidée par zod) resservie hors ligne, datée à l'écran, purgée à la déconnexion                  |
+| `src/app/config/csp.ts`              | la CSP ouverte à l'origine du projet Supabase — `https:` et `wss:` —, quand il est retenu, et à rien en local                      |
 | `src/auth/`, `src/features/account/` | le fournisseur, le formulaire — lien d'abord, mot de passe en option — et `useRole()`                                              |
 | `.github/workflows/supabase-*.yml`   | tests pgTAP sur une pile jetable, migrations, et le keep-alive anti-pause du plan Free                                             |
 

@@ -31,6 +31,7 @@ personne à la rediscuter.
 | [0010](./0010-ecrire-hors-ligne.md)             | Écrire hors ligne : une file sur le port, pas dans l'adaptateur  |
 | [0011](./0011-mesure-audience.md)               | Une propriété GA4 pour le parc, l'application en dimension       |
 | [0012](./0012-posthog-en-europe.md)             | PostHog en Europe remplace GA4 — l'outil, pas la forme           |
+| [0013](./0013-lire-hors-ligne.md)               | Lire hors ligne : le dernier état connu, copié derrière le port  |
 
 ## Quand une application s'écarte
 

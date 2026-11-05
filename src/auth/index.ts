@@ -1,7 +1,21 @@
 import { supabaseAuthAdapter } from '@mister-guiiug/dev-pwa-config/auth/supabase';
 import { useAuthContext } from '@mister-guiiug/dev-pwa-config/react/auth-provider';
 import { supabase } from '../backend/supabase.ts';
-import { coverage } from '../backend/index.ts';
+import { coverage, purgeReadCache } from '../backend/index.ts';
+
+/**
+ * LES ÉVÉNEMENTS BRUTS DE LA SESSION, que `AuthProvider` passe à `onEvent`.
+ *
+ * `SIGNED_OUT` purge la copie de lecture (ADR 0013). C'est l'événement, et pas
+ * le bouton « Se déconnecter », qui décide : il couvre aussi le jeton que le
+ * SDK n'arrive plus à rafraîchir et l'effacement du compte. Sur un appareil
+ * partagé, le compte suivant ne relit rien du précédent, même hors ligne.
+ * C'est le branchement que le socle documente (« `SIGNED_OUT` → purger le
+ * local »), celui de miss-uwh.
+ */
+export function onAuthEvent(event: string): void {
+  if (event === 'SIGNED_OUT') void purgeReadCache();
+}
 
 /**
  * L'ADAPTATEUR, OU RIEN.

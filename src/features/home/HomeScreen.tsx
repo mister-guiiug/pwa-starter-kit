@@ -10,9 +10,10 @@ import { useToast } from '@mister-guiiug/dev-pwa-config/react/toast';
 import { AppFooter } from '@mister-guiiug/dev-pwa-config/react/app-footer';
 import { useI18n } from '../../i18n/index.ts';
 import { REPO_URL } from '../../app/links.ts';
-import { notesSync } from '../../backend/index.ts';
+import { notesCache, notesSync } from '../../backend/index.ts';
 import { useNotes } from './store.ts';
 import { SyncState } from './SyncState.tsx';
+import { StaleCopy } from './StaleCopy.tsx';
 
 /** L'identifiant de la notification d'une note : un sursis, une notification. */
 const undoToastId = (id: string) => `note-supprimee-${id}`;
@@ -146,6 +147,13 @@ export function HomeScreen() {
         <div className="mt-4">
           <SyncState sync={notesSync} onResync={() => void load()} />
         </div>
+      ) : null}
+
+      {/* LA COPIE DATÉE, même règle : il n'y en a qu'en mode distant. Hors
+          ligne, la liste vient du dernier état que le serveur a confirmé — et
+          l'écran le dit, avec sa date (ADR 0013). */}
+      {notesCache ? (
+        <StaleCopy cache={notesCache} onRetry={load} className="mt-4" />
       ) : null}
 
       {!ready ? (

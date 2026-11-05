@@ -33,11 +33,13 @@ function depotFactice() {
       load: async (): Promise<NotesSnapshot> => ({ notes: [...ecrites] }),
       add: async (n: Note) => {
         if (refus) throw refus;
-        ecrites.push(n);
+        ecrites.unshift(n);
       },
       remove: async (id: string) => {
         if (refus) throw refus;
         retirees.push(id);
+        const index = ecrites.findIndex(n => n.id === id);
+        if (index >= 0) ecrites.splice(index, 1);
       },
       clear: async () => {
         ecrites.length = 0;
@@ -160,6 +162,87 @@ describe('la file d’écritures hors ligne', () => {
     depot.refuser(null);
     expect(await file.queue.flush()).toMatchObject({ done: 1 });
     expect(depot.ecrites.map(n => n.id)).toEqual(['note_1']);
+  });
+
+  it('une longue coupure ne tue pas une écriture valide : le réseau ne compte pas', async () => {
+    // LE WI-FI D'UN TRAIN : `navigator.onLine` dit « en ligne », chaque
+    // requête échoue. Avant le 05/11/2026, chaque échec comptait pour
+    // `maxAttempts` : au cinquième — quinze secondes de retrait —, une note
+    // que la base aurait acceptée partait en lettre morte.
+    const depot = depotFactice();
+    const file = fileSur(depot.repository, () => true);
+    depot.refuser(new TypeError('Failed to fetch'));
+
+    await file.notes.add(note('note_du_tunnel'));
+    await file.drained();
+    for (let essai = 0; essai < 12; essai++) await file.queue.flush();
+
+    expect(file.queue.deadLetters()).toHaveLength(0);
+    expect(file.queue.pending()).toBe(1);
+    expect(file.getSnapshot().status).toBe('pending');
+
+    // Le réseau revient : la note part, comme si de rien n'était.
+    depot.refuser(null);
+    await file.queue.flush();
+    expect(depot.ecrites.map(n => n.id)).toEqual(['note_du_tunnel']);
+  });
+
+  it('un échec du serveur reste borné, et les coupures d’avant ne l’usent pas', async () => {
+    const depot = depotFactice();
+    const file = fileSur(depot.repository, () => true);
+
+    // D'abord une longue coupure : elle ne doit rien consommer…
+    depot.refuser(new TypeError('Failed to fetch'));
+    await file.notes.add(note('note_1'));
+    await file.drained();
+    for (let essai = 0; essai < 7; essai++) await file.queue.flush();
+    expect(file.queue.pending()).toBe(1);
+
+    // …puis un serveur qui répond mal. Une erreur mal classée ne doit pas
+    // bloquer la file pour toujours : cinq réponses, pas une de plus.
+    depot.refuser(new Error('Internal Server Error'));
+    for (let essai = 0; essai < 4; essai++) await file.queue.flush();
+    expect(file.queue.pending()).toBe(1);
+    expect(file.queue.deadLetters()).toHaveLength(0);
+
+    await file.queue.flush();
+    expect(file.queue.pending()).toBe(0);
+    expect(file.queue.deadLetters()).toHaveLength(1);
+    expect(file.getSnapshot()).toMatchObject({ status: 'error', dead: 1 });
+
+    // « Réessayer » rend cinq essais, comme le promet le socle (`requeueDead`,
+    // compteurs remis à zéro) — pas un seul.
+    file.queue.requeueDead();
+    for (let essai = 0; essai < 4; essai++) await file.queue.flush();
+    expect(file.queue.pending()).toBe(1);
+    expect(file.queue.deadLetters()).toHaveLength(0);
+  });
+
+  it('relue, la liste montre aussi ce qui attend encore dans la file', async () => {
+    // Sans ce recouvrement, une note écrite hors ligne DISPARAÎT de l'écran au
+    // rechargement : la lecture rend l'état du serveur (ou sa copie), qui ne
+    // l'a pas encore reçue. Elle partirait quand même — mais l'utilisateur,
+    // lui, l'aurait déjà réécrite.
+    const depot = depotFactice();
+    depot.ecrites.push(note('note_ancienne'), note('note_condamnee'));
+    let enLigne = false;
+    const file = fileSur(depot.repository, () => enLigne);
+
+    await file.notes.add(note('note_en_attente'));
+    await file.notes.remove('note_condamnee');
+
+    expect((await file.notes.load()).notes.map(n => n.id)).toEqual([
+      'note_en_attente',
+      'note_ancienne',
+    ]);
+
+    // Une fois partie, elle vient du serveur : pas de doublon.
+    enLigne = true;
+    await file.queue.flush();
+    expect((await file.notes.load()).notes.map(n => n.id).sort()).toEqual([
+      'note_ancienne',
+      'note_en_attente',
+    ]);
   });
 
   it('ajoutée puis retirée hors ligne, une seule opération part', async () => {
