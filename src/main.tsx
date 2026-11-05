@@ -9,7 +9,7 @@ import { ToastProvider } from '@mister-guiiug/dev-pwa-config/react/toast';
 import { VersionProvider } from '@mister-guiiug/dev-pwa-config/react/version';
 import { AuthProvider } from '@mister-guiiug/dev-pwa-config/react/auth-provider';
 import { I18nProvider } from './i18n/index.ts';
-import { authAdapter } from './auth/index.ts';
+import { authAdapter, onAuthEvent } from './auth/index.ts';
 import { env } from './app/config/env.ts';
 import { App } from './App.tsx';
 import './index.css';
@@ -55,8 +55,9 @@ createRoot(container).render(
           {/* L'adaptateur est `null` tant qu'aucun backend distant n'est
               configuré : le fournisseur se met alors en mode local, l'état
               reste « déconnecté », et les actions rendent une erreur nommée
-              plutôt que d'échouer sur un client absent. */}
-          <AuthProvider adapter={authAdapter()}>
+              plutôt que d'échouer sur un client absent. `onAuthEvent` purge
+              la copie de lecture à la déconnexion. */}
+          <AuthProvider adapter={authAdapter()} onEvent={onAuthEvent}>
             <ToastProvider>
               <App />
             </ToastProvider>

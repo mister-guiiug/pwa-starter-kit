@@ -1,6 +1,7 @@
 import { createLogger } from '@mister-guiiug/dev-pwa-config/logger';
 import { supabase } from '../../backend/supabase.ts';
 import { notesStore } from '../../backend/local.ts';
+import { purgeReadCache } from '../../backend/index.ts';
 
 const log = createLogger('compte');
 
@@ -38,7 +39,9 @@ export function memeAdresse(saisie: string, compte: string): boolean {
  *     sont pas dans la base, donc `delete_my_account()` ne les voit pas — et
  *     « supprimer mon compte » ne peut pas laisser des données de l'utilisateur
  *     sur l'écran suivant. Le thème et la langue restent : ce sont des
- *     préférences d'appareil, pas des données de compte ;
+ *     préférences d'appareil, pas des données de compte. La COPIE DE LECTURE
+ *     (ADR 0013) part avec lui, sans attendre l'événement `SIGNED_OUT` : si
+ *     la session locale résiste au point 3, il ne viendrait jamais ;
  *  3. LA SESSION EN DERNIER, et **en portée locale**. Une déconnexion globale
  *     demande au serveur de révoquer les jetons ; le compte n'existant plus, la
  *     requête échoue, et l'application garde une session qui ne mène nulle
@@ -61,6 +64,7 @@ export async function deleteMyAccount(): Promise<void> {
   }
 
   notesStore.clear();
+  await purgeReadCache();
 
   const { error: deconnexion } = await db.auth.signOut({ scope: 'local' });
   // La session locale qui résiste ne remet pas le compte en place : on le

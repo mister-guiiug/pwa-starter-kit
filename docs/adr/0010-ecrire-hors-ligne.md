@@ -56,6 +56,19 @@ et `maxAttempts` borne même les échecs « transitoires » — une erreur mal c
 bloquerait sinon la file pour toujours, en silence. C'est la panne que ce module
 refuse d'avoir : une file qui boucle ne se répare jamais toute seule.
 
+**Mais une coupure n'use pas la note** (amendé le 05/11/2026). La file du socle
+compte TOUS les échecs dans `attempts`, et n'épargne que la coupure que
+`navigator.onLine` voit. Le Wi-Fi d'un train, un portail captif, un réseau qui
+revient à moitié : l'appareil se dit en ligne, chaque requête échoue, et avec le
+retrait du socle (1 s, 2 s, 4 s, 8 s) quinze secondes suffisaient à faire mourir
+une note que la base aurait acceptée. La borne se tient donc dans
+`queued-notes.ts`, sur les seules **réponses** du serveur : une erreur « réseau »
+se réessaie sans fin au rythme plafonné du retrait (30 s), un 5xx ou une erreur
+inclassable garde ses cinq essais. Le compte est en mémoire — la file n'offre
+pas d'écrire à côté d'`attempts` — : une borne par session, ce qui suffit à ne
+jamais boucler. Le prix : une requête que la CSP refuse ressemble à une coupure,
+et reste « en attente » au lieu de partir en lettre morte.
+
 **Et l'écran le dit, sinon la file ment.** `SyncStatusBadge` du socle porte
 l'état en continu — « Hors ligne » dès la coupure, « En attente (N) » pendant le
 rejeu — et un bandeau annonce les refus durables avec les deux seules suites
@@ -82,7 +95,10 @@ prochain adaptateur :
 - une mutation **refusée par la RLS finit en lettre morte** dès le premier
   essai, l'instantané le dit, **et la file continue** — une tête bloquante
   emporterait tout ce qui suit ;
-- un **échec de réseau**, lui, est réessayé sans consommer la note ;
+- un **échec de réseau**, lui, est réessayé sans consommer la note — et une
+  longue coupure, que `navigator.onLine` ne voit pas, ne le fait pas mourir ;
+  un serveur qui répond mal, si, au cinquième essai ;
+- relue, la liste montre aussi **ce qui attend encore** dans la file ;
 - ajoutée puis retirée hors ligne, **une seule opération part** ;
 - `import` et `clear` **ne passent pas** par la file.
 
@@ -110,9 +126,10 @@ c'est le bon endroit.
 - **La file grossit dans le stockage.** Plafond à deux cents entrées (défaut du
   socle) ; au-delà, `enqueue` refuse et le magasin restaure l'état d'avant en
   portant l'erreur — refuser visiblement vaut mieux que jeter en silence.
-- **La lecture n'est pas mise en file.** Hors ligne, c'est le service worker qui
-  répond, ou l'appel échoue et l'écran le dit. Un cache de lecture est une autre
-  décision, que ce squelette ne prend pas.
+- **La lecture n'est pas mise en file.** Cette page affirmait jusqu'au 05/11/2026
+  que « hors ligne, c'est le service worker qui répond » : aucune règle de cache
+  ne visait Supabase, et rien ne répondait. La lecture hors ligne est désormais
+  une copie tenue derrière le port — l'ADR [0013](./0013-lire-hors-ligne.md).
 - Une application qui ajoute un port distant doit décider, port par port, ce qui
   s'enfile. La règle est écrite ici : ce qui nomme une ligne, oui ; ce qui
   remplace tout, non.
@@ -130,8 +147,8 @@ c'est le bon endroit.
   possible. Une application dont deux utilisateurs touchent la même ligne doit
   trancher **et l'écrire** — comme mister-doc, dont un créneau n'a qu'un
   occupant.
-- **Une file pour la lecture** (cache hors ligne). Mister-doc l'a
-  (`idbCache.ts`) ; c'est un autre problème, et le service worker en couvre
-  déjà l'essentiel ici.
+- **Une file pour la lecture** (cache hors ligne). C'est un autre problème, que
+  le service worker ne couvrait PAS, contrairement à ce que disait cette ligne :
+  il est tranché par l'ADR [0013](./0013-lire-hors-ligne.md).
 - **Attendre le serveur avant d'afficher.** Ce serait rendre l'application
   local-first inutilement lente, et c'est déjà écarté par l'ADR 0002.

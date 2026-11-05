@@ -1,8 +1,10 @@
 import { createBackendSelector } from '@mister-guiiug/dev-pwa-config/backend';
+import { createIdb } from '@mister-guiiug/dev-pwa-config/idb';
 import { createLogger } from '@mister-guiiug/dev-pwa-config/logger';
 import { createLocalBackend } from './local.ts';
 import { createSupabaseNotes } from './supabase.ts';
 import { createQueuedNotes, type QueuedNotes } from './queued-notes.ts';
+import { createCachedNotes, type CachedNotes } from './cached-notes.ts';
 import type { Backend } from './ports.ts';
 
 const log = createLogger('backend');
@@ -15,6 +17,13 @@ const log = createLogger('backend');
  * n'affiche alors aucun indicateur — il n'a rien à dire.
  */
 let file: QueuedNotes | null = null;
+
+/**
+ * LA COPIE DE LECTURE, même règle : il n'y a qu'en mode distant qu'une
+ * lecture peut manquer de réseau. `null` en local — le magasin versionné EST
+ * déjà la vérité, sur l'appareil.
+ */
+let lecture: CachedNotes | null = null;
 
 /**
  * LE SÉLECTEUR DE BACKEND, DÉCLARÉ EN UNE FOIS.
@@ -53,12 +62,24 @@ const selectBackend = createBackendSelector<Backend>({
       // pas nommé ici reste servi par le repli. C'est ce qui permet de migrer
       // une application déjà en production, port par port.
       //
-      // L'ADAPTATEUR EST ENVELOPPÉ, PAS MODIFIÉ. `createQueuedNotes` rend le
-      // même port et absorbe l'attente : la file du socle enfile les mutations
-      // et les rejoue au retour du réseau (ADR 0010). L'adaptateur Supabase,
-      // lui, ignore qu'il existe une file — il ne sait qu'écrire une ligne.
+      // L'ADAPTATEUR EST ENVELOPPÉ, PAS MODIFIÉ — deux fois, et l'ordre compte.
+      //
+      //  - `createCachedNotes` au plus près du réseau : chaque lecture réussie
+      //    est copiée dans IndexedDB, et resservie, datée, quand le réseau
+      //    manque (ADR 0013). Les écritures qu'il voit passer sont celles que
+      //    le serveur a ACCEPTÉES : ce sont elles qui retouchent la copie ;
+      //  - `createQueuedNotes` par-dessus : la file du socle enfile les
+      //    mutations et les rejoue au retour du réseau (ADR 0010), et pose ce
+      //    qui attend encore sur ce que la lecture rend.
+      //
+      // L'adaptateur Supabase, lui, ignore les deux — il ne sait qu'écrire et
+      // lire une ligne. La base IndexedDB porte le nom de l'application :
+      // toutes les apps du parc partagent l'origine, donc l'espace de noms.
       create: () => {
-        file = createQueuedNotes(createSupabaseNotes());
+        lecture = createCachedNotes(createSupabaseNotes(), {
+          idb: createIdb('pwa-starter-kit-lecture'),
+        });
+        file = createQueuedNotes(lecture.notes);
         void file.start();
         return { notes: file.notes };
       },
@@ -92,6 +113,26 @@ export const coverage = {
  * « N en attente » ou « refusée ».
  */
 export const notesSync: QueuedNotes | null = file;
+
+/**
+ * La copie de lecture du backend retenu, ou `null` en local. L'accueil
+ * l'observe pour dire « copie enregistrée il y a… » quand il en montre une.
+ */
+export const notesCache: CachedNotes | null = lecture;
+
+/**
+ * EFFACE LA COPIE DE LECTURE — appelé à la déconnexion (`SIGNED_OUT`) et à
+ * l'effacement du compte. Sur un appareil partagé, le compte suivant ne doit
+ * rien relire du précédent, même hors ligne. Sans backend distant, il n'y a
+ * pas de copie : l'appel ne fait rien.
+ *
+ * LA FILE N'EST PAS VIDÉE ICI, et c'est délibéré : jeter des écritures en
+ * attente sans prévenir est le défaut que l'audit du 05/11/2026 relève chez
+ * deux applications. Les compter et le demander est une autre décision.
+ */
+export async function purgeReadCache(): Promise<void> {
+  await lecture?.purge();
+}
 
 export type { Backend, Note, NotesSnapshot } from './ports.ts';
 export { supabase } from './supabase.ts';

@@ -5,7 +5,7 @@ import {
 import { createStore } from '@mister-guiiug/dev-pwa-config/storage';
 import { classifyBackendError } from '@mister-guiiug/dev-pwa-config/backend';
 import { createLogger } from '@mister-guiiug/dev-pwa-config/logger';
-import type { Note, NotesRepository } from './ports.ts';
+import type { Note, NotesRepository, NotesSnapshot } from './ports.ts';
 
 const log = createLogger('sync');
 
@@ -60,10 +60,32 @@ export interface QueuedNotesOptions {
     addEventListener?: (type: string, listener: () => void) => void;
     removeEventListener?: (type: string, listener: () => void) => void;
   };
-  /** Échecs cumulés avant lettre morte, même « transitoires ». */
+  /**
+   * Réponses en échec du serveur avant lettre morte, même « transitoires ».
+   * Une COUPURE ne compte pas : seul un serveur qui répond mal use la note.
+   */
   maxAttempts?: number;
   setTimeout?: typeof setTimeout;
   clearTimeout?: typeof clearTimeout;
+}
+
+/**
+ * Ce qu'a rendu une lecture, plus ce que la file n'a pas encore envoyé — dans
+ * l'ordre d'envoi, comme le serveur le verra. Une note ajoutée passe en tête,
+ * comme dans le magasin ; une note déjà là n'est pas doublée.
+ */
+export function avecEnAttente(
+  lu: NotesSnapshot,
+  enAttente: readonly NoteMutation[]
+): NotesSnapshot {
+  let notes = lu.notes;
+  for (const mutation of enAttente) {
+    notes =
+      mutation.kind === 'add'
+        ? [mutation.note, ...notes.filter(n => n.id !== mutation.note.id)]
+        : notes.filter(n => n.id !== mutation.id);
+  }
+  return notes === lu.notes ? lu : { notes };
 }
 
 /**
@@ -139,12 +161,39 @@ export function createQueuedNotes(
     for (const listener of listeners) listener();
   }
 
+  /**
+   * LES ÉCHECS QUI COMPTENT, par entrée — et une coupure n'en est pas un.
+   *
+   * La file du socle compte TOUS les échecs dans `attempts` et met de côté au
+   * cinquième. Elle épargne la coupure que `navigator.onLine` voit ; pas
+   * celle qu'il ne voit pas — le Wi-Fi d'un train, un portail captif, un
+   * réseau qui revient à moitié. Relevé à l'audit du 05/11/2026 : avec le
+   * retrait du socle (1 s, 2 s, 4 s, 8 s), quinze secondes d'un tel réseau
+   * suffisaient à faire mourir une note que la base aurait acceptée.
+   *
+   * On passe donc `maxAttempts: Infinity` à la file, et la borne se tient
+   * ICI, sur les seules réponses du serveur. Une erreur « réseau » se
+   * réessaie sans fin, au rythme plafonné du retrait (30 s) ; un 5xx, ou
+   * toute erreur que rien ne classe, garde sa borne — une erreur mal classée
+   * bloquerait sinon la file pour toujours.
+   *
+   * EN MÉMOIRE, et c'est assumé : `attempts` ne distingue pas les deux
+   * sortes, et la file n'offre pas d'écrire à côté. Un rechargement rend
+   * donc cinq essais à une entrée qui n'était pas encore morte — une borne
+   * par session, ce qui suffit à ne jamais boucler.
+   */
+  const echecsServeur = new Map<string, number>();
+  /** L'entrée que le drain traite : la file draine EN SÉRIE, une à la fois. */
+  let enCours = '';
+
   const queue = createSyncQueue<NoteMutation>({
     store: createStore(prefix),
     // Le transport, injecté : la file ne sait pas vers quoi elle rejoue.
-    process: async mutation => {
+    process: async (mutation, entry) => {
+      enCours = entry.id;
       if (mutation.kind === 'add') await inner.add(mutation.note);
       else await inner.remove(mutation.id);
+      echecsServeur.delete(entry.id);
     },
     /**
      * UNE NOTE, UNE OPÉRATION EN ATTENTE. Ajoutée puis retirée hors ligne,
@@ -157,17 +206,25 @@ export function createQueuedNotes(
     /**
      * CE QUI NE SE REJOUE PAS. `classifyBackendError` du socle lit le message
      * des SDK et du navigateur : un refus de permission (RLS, session
-     * expirée) ne réussira pas mieux la cinquième fois. Tout le reste est
-     * réessayé — et `maxAttempts` borne même les échecs « transitoires », car
-     * une erreur mal classée bloquerait la file pour toujours.
+     * expirée) ne réussira pas mieux la cinquième fois. Une coupure se
+     * réessaie toujours ; le reste, `maxAttempts` fois — voir plus haut.
      */
-    shouldRetry: error =>
-      classifyBackendError(
+    shouldRetry: error => {
+      const genre = classifyBackendError(
         error instanceof Error ? error.message : String(error)
-      ) !== 'permission',
-    maxAttempts,
+      );
+      if (genre === 'permission') return false;
+      if (genre === 'network') return true;
+      const echecs = (echecsServeur.get(enCours) ?? 0) + 1;
+      echecsServeur.set(enCours, echecs);
+      return echecs < maxAttempts;
+    },
+    maxAttempts: Number.POSITIVE_INFINITY,
     isOnline,
     onDead: (entry, error) => {
+      // « Réessayer » rend la lettre morte à la file compteurs remis à zéro
+      // (`requeueDead`) : le nôtre aussi, sinon elle remourrait au premier 5xx.
+      echecsServeur.delete(entry.id);
       const message = error instanceof Error ? error.message : String(error);
       log.error('écriture refusée définitivement', {
         mutation: entry.payload,
@@ -196,9 +253,23 @@ export function createQueuedNotes(
   }
 
   const notes: NotesRepository = {
-    // La LECTURE n'est pas mise en file : elle n'a rien à rejouer. Hors ligne,
-    // c'est le service worker qui répond, ou l'appel échoue et l'écran le dit.
-    load: () => inner.load(),
+    /**
+     * La LECTURE n'est pas mise en file : elle n'a rien à rejouer. Ce n'est
+     * PAS le service worker qui répond hors ligne — ce commentaire l'a affirmé
+     * jusqu'au 05/11/2026, alors qu'aucune règle de cache ne visait Supabase.
+     * C'est la copie de `cached-notes.ts`, quand l'adaptateur en a une ; sans
+     * elle, l'appel échoue et l'écran le dit.
+     *
+     * CE QUI ATTEND EST POSÉ PAR-DESSUS. Ce que rend la lecture — le serveur
+     * ou sa copie — ne connaît pas encore les écritures en file : sans ce
+     * recouvrement, une note écrite hors ligne DISPARAÎTRAIT de l'écran au
+     * rechargement, en attendant de partir. L'utilisateur la réécrirait.
+     */
+    load: async () =>
+      avecEnAttente(
+        await inner.load(),
+        queue.list().map(entry => entry.payload)
+      ),
 
     add: async note => enfiler({ kind: 'add', note }),
     remove: async id => enfiler({ kind: 'remove', id }),

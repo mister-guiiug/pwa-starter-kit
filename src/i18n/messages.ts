@@ -53,6 +53,8 @@ const fr = {
       },
       retry: 'Réessayer',
     },
+    stale:
+      'Réseau indisponible : voici la copie enregistrée {when}. Les notes ont pu changer depuis.',
   },
   settings: {
     title: 'Réglages',
@@ -143,6 +145,8 @@ const en: typeof fr = {
       },
       retry: 'Retry',
     },
+    stale:
+      'Network unavailable: this is the copy saved {when}. Notes may have changed since.',
   },
   settings: {
     title: 'Settings',
