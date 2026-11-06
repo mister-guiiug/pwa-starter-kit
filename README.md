@@ -150,7 +150,6 @@ Ce que la variante apporte, tout est déjà là :
 | `src/backend/supabase.ts`            | l'adaptateur du seul port `notes` — les autres restent locaux ; `flowType: 'pkce'`                                                 |
 | `src/backend/queued-notes.ts`        | la file d'écritures hors ligne (`sync-queue` du socle) enveloppant ce port ; rien en mode local                                    |
 | `src/backend/cached-notes.ts`        | la copie de lecture (IndexedDB, revalidée par zod) resservie hors ligne, datée à l'écran, purgée à la déconnexion                  |
-| `src/app/config/csp.ts`              | la CSP ouverte à l'origine du projet Supabase — `https:` et `wss:` —, quand il est retenu, et à rien en local                      |
 | `src/auth/`, `src/features/account/` | le fournisseur, le formulaire — lien d'abord, mot de passe en option — et `useRole()`                                              |
 | `.github/workflows/supabase-*.yml`   | tests pgTAP sur une pile jetable, migrations, et le keep-alive anti-pause du plan Free                                             |
 
