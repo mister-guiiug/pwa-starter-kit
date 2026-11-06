@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv, type PluginOption } from 'vite';
+import { defineConfig, type PluginOption } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -11,7 +11,6 @@ import {
 import { cspPlugin } from '@mister-guiiug/dev-pwa-config/vite-csp';
 import { versionPlugin } from '@mister-guiiug/dev-pwa-config/vite-version';
 import { devPortOf } from '@mister-guiiug/dev-pwa-config/apps-catalog';
-import { supabaseOrigins } from './src/app/config/csp.ts';
 
 /**
  * LE MANIFESTE NE S'ÉCRIT PAS À LA MAIN.
@@ -31,12 +30,7 @@ import { supabaseOrigins } from './src/app/config/csp.ts';
 const analyze = process.env.ANALYZE === '1';
 const APP_ID = 'pwa-starter-kit';
 
-export default defineConfig(({ command, mode }) => {
-  // L'environnement que Vite copiera dans le bundle — `.env*` ET variables du
-  // processus, comme `build-env` du déploiement. La CSP le lit au même
-  // endroit : elle s'ouvre au backend que le bundle utilisera, pas à un autre.
-  const env = loadEnv(mode, process.cwd(), 'VITE_');
-
+export default defineConfig(({ command }) => {
   // `VITE_BASE_PATH` est prioritaire : le déploiement famille le pose, et la
   // CI Lighthouse le met à `/` pour servir le build à la racine. Sans cette
   // priorité, l'audit part sur un chemin qui n'existe pas et rend NO_FCP.
@@ -83,13 +77,10 @@ export default defineConfig(({ command, mode }) => {
         // l'échec ne se verrait qu'en console, sur le site déployé, une fois
         // le consentement donné.
         analytics: true,
-        // LE PROJET SUPABASE, quand l'application en a un — et lui seul.
-        // Sans lui, la politique refuse chaque requête du backend distant,
-        // même en ligne : c'est ce qui laissait miss-arcade sur ses valeurs
-        // de démonstration en production (05/11/2026). La règle est celle du
-        // sélecteur de backend, et l'origine celle du projet, pas un joker :
-        // cf. `src/app/config/csp.ts`. En mode local, rien ne s'ouvre.
-        connectSrc: ["'self'", ...supabaseOrigins(env)],
+        // LE PROJET SUPABASE s'ouvre de lui-même : `cspPlugin` lit
+        // `VITE_SUPABASE_URL` et ajoute l'origine EXACTE du projet, avec sa
+        // websocket (socle 6.32.0, promu d'ici et de onze apps). Sans la
+        // variable, rien ne s'ouvre.
       }),
 
       // Repli SPA : sans `404.html`, rafraîchir un lien profond sert la page

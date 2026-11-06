@@ -75,8 +75,9 @@ purge l'efface, et une lecture arrivée après la purge ne la réécrit pas.
 `src/backend/purge-lecture.test.ts`, sur le backend construit pour de vrai en
 mode distant : `SIGNED_OUT` purge, l'effacement du compte aussi.
 
-`src/app/config/csp.test.ts` : la politique s'ouvre au projet en mode Supabase,
-reste fermée en local et sous `VITE_BACKEND=local`.
+La CSP s'ouvre à l'origine exacte du projet Supabase par le socle
+(`cspPlugin`, 6.32.0, qui lit `VITE_SUPABASE_URL`) : `src/app/config/csp.ts`,
+promu, a été retiré.
 
 `e2e/hors-ligne.spec.ts`, `@critical` : la **build de production**, rouverte
 sans réseau — `setOffline` et toutes les requêtes refusées —, démarre et relit
