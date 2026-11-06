@@ -84,6 +84,11 @@ export default defineConfig(({ command }) => {
         siteName: 'PWA Starter Kit',
         logoPath: '/icons/icon-512.png',
         themeColor: { light: '#f7f8fa', dark: '#0f1115' },
+        // Le script qui applique le thème AVANT le premier rendu, avec la clé
+        // de `ThemeProvider` (`dwc_theme`). Sans lui, `index.html` le disait
+        // posé et il ne l'était pas : un visiteur en sombre voyait un flash
+        // clair à chaque démarrage à froid, le temps que React charge.
+        themeBoot: true,
       }),
 
       // `frame-ancestors` est volontairement absent : la spécification
