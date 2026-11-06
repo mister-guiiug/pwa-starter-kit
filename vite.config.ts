@@ -3,7 +3,12 @@ import { VitePWA } from 'vite-plugin-pwa';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { pwaBaseOptions } from '@mister-guiiug/dev-pwa-config/vite-pwa';
+import {
+  pwaBaseOptions,
+  sentryChunkFileNames,
+  sentryChunkGroups,
+  withoutSentryPreload,
+} from '@mister-guiiug/dev-pwa-config/vite-pwa';
 import {
   pwaSeoPlugin,
   spaFallbackPlugin,
@@ -49,7 +54,23 @@ export default defineConfig(({ command }) => {
     // `strictPort` : un port pris fait échouer le démarrage, au lieu de glisser
     // en silence vers un autre que `.claude/launch.json` ne connaît pas.
     server: { port: devPortOf(APP_ID, 5240), strictPort: true },
-    build: { sourcemap: true },
+    // LE MORCEAU SENTRY, À PART : les trois gestes que le socle a promus de
+    // dix-huit apps (`vite-pwa.js`, « LE MORCEAU SENTRY »). Un nom fixe, pour
+    // qu'une coquille précachée ne demande pas une URL qu'un déploiement a
+    // supprimée ; hors des préchargements de l'entrée ; et React rangé dans
+    // son propre morceau, sinon il part dans `sentry.js`, que le précache
+    // exclut, et l'app ne démarre plus hors ligne (constaté sur trois apps le
+    // 05/11/2026). Le précache, lui, l'écarte déjà par `pwaBaseOptions`.
+    build: {
+      sourcemap: true,
+      modulePreload: { resolveDependencies: withoutSentryPreload },
+      rolldownOptions: {
+        output: {
+          codeSplitting: { groups: sentryChunkGroups() },
+          chunkFileNames: sentryChunkFileNames,
+        },
+      },
+    },
     plugins: [
       react(),
       tailwindcss(),
