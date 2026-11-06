@@ -225,8 +225,17 @@ place de l'application. Deux réserves, qu'il ne traite pas encore :
 - la CI de la famille rejoue le lockfile en npm 11 (Node 26.13.0), et npm 10
   retire les champs `libc` qu'écrit npm 11 et que porte le lockfile de ce
   dépôt ;
-- la page de `content/pages/` et l'image `public/og-image.jpg` présentent
-  encore le squelette.
+- l'image `public/og-image.jpg` présente encore le squelette.
+
+**Ce qui ne parle que du squelette ne naît pas** : ses pages de contenu, son
+texte d'accueil et le test qui en tient la liste sont déclarés dans
+`squelette.propres` de `package.json`, et le générateur les retire
+(create-lg-pwa-app#27). Renommés, ils mentaient : miss-arcade disait en accueil
+« C'est le squelette des applications de la famille ». L'application naît
+sans page de contenu, avec le refus `seo-content-pages` que déclare
+`squelette.refusALaNaissance` : sans lui, `pwa-doctor --strict` ferait échouer
+son premier build, et le docteur le signale de lui-même dès la première page.
+**Un guide ajouté ici s'y inscrit** : `src/squelette.test.ts` échoue sinon.
 
 Restent cinq gestes, que le générateur imprime et ne fait pas :
 

@@ -40,6 +40,15 @@ composants du socle ne posent que des attributs `data-dwc` : sans cette
 feuille, ils compilent, les tests passent, le lint est vert, et l'écran est
 cassé. Elle est importée dans `src/index.css` — ne pas la retirer.
 
+## Ce qui ne parle que du squelette
+
+Le générateur recopie tout l'arbre et n'y change que les noms. Un fichier qui
+parle du squelette lui-même — une page de contenu, le texte d'accueil servi aux
+robots — deviendrait faux dans l'application, et y serait publié. Il s'inscrit
+donc dans `squelette.propres` de `package.json`, que le générateur ne recopie
+pas. `src/squelette.test.ts` l'exige pour toute page publiée et pour le texte
+d'accueil, et refuse une entrée qui n'existe plus.
+
 ## Modifier
 
 Une pull request, la CI verte, et un ADR si la modification change une
