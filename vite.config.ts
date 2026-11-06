@@ -130,6 +130,11 @@ export default defineConfig(({ command }) => {
       VitePWA(
         pwaBaseOptions({
           id: APP_ID,
+          // La base RÉELLE du build. Sans elle, le socle la déduit de `id`
+          // (`/pwa-starter-kit/`) : juste en production, faux pour les builds
+          // e2e et Lighthouse servis à la racine, dont la portée, le
+          // `start_url` et le repli de navigation visaient un chemin absent.
+          basePath,
           name: 'PWA Starter Kit',
           shortName: 'Starter Kit',
           description:
