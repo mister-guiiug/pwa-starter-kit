@@ -33,6 +33,17 @@
     "preloadGzipKb": 175,
     "mainChunkKb": 527
   },
+  "squelette": {
+    "_pourquoi": "CE QUI NE PARLE QUE DU SQUELETTE NE NAÎT DANS AUCUNE APPLICATION. Le générateur recopie tout l'arbre et n'y change que les noms : miss-arcade et miss-holi-voyage, nées le 31/10/2026, servaient en accueil « C'est le squelette des applications de la famille » (content/accueil.md) et publiaient mot pour mot les trois guides de content/pages/, chacun se déclarant l'original par sa canonique. create-lg-pwa-app retire ce que liste `propres`, puis recopie `refusALaNaissance` dans pwaDoctor.refus : sans page de contenu, pwa-doctor --strict relève la dette seo-content-pages, et le premier build de l'application échouerait. Ce refus se signale de lui-même (refus-perime-seo-content-pages) dès que l'application publie sa première page. LA LISTE EST ICI, À CÔTÉ DES FICHIERS, ET NON DANS LE GÉNÉRATEUR : qui ajoute un guide au squelette voit la règle, et src/squelette.test.ts échoue s'il l'oublie — il exige que chaque page publiée et le texte d'accueil servi soient couverts, et que chaque entrée existe encore.",
+    "propres": [
+      "content/accueil.md",
+      "content/pages/",
+      "src/squelette.test.ts"
+    ],
+    "refusALaNaissance": {
+      "seo-content-pages": "née du générateur sans page de contenu : celles du squelette ne parlaient que de lui. Écrire la première dans content/pages/, puis retirer cette ligne."
+    }
+  },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
     "@commitlint/cli": "^21.2.4",
