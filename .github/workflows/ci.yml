@@ -21,6 +21,12 @@ jobs:
       # Les e2e du squelette tournent en CI : c'est lui qui doit prouver que la
       # suite marche, avant qu'une app ne la copie.
       run-e2e: true
+      # LE TÉLÉPHONE AUSSI. La mise en page du squelette est pensée pour lui :
+      # barre basse collée, toasts posés au-dessus, bandeau de consentement en
+      # fin de contenu. Seul `chromium` (bureau) tournait. `mobile-chrome`
+      # émule un Pixel 7 avec le même navigateur : rien de plus à installer,
+      # quelques secondes de plus (23 tests en 16 s sur un poste, 06/11/2026).
+      e2e-project: chromium mobile-chrome
       # Second avis TypeScript 7, NON BLOQUANT. La 6 reste la référence : c'est
       # elle que typescript-eslint résout, et il refuse la 7.0 par une assertion
       # à l'import. Le jour où typescript-eslint#10940 se ferme, cette entrée
