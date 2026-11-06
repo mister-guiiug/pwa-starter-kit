@@ -68,3 +68,45 @@ describe('index.css - le contour des contrôles', () => {
     }
   });
 });
+
+/**
+ * LE TEXTE, SUR CHAQUE FOND OÙ IL SE POSE : 4,5:1 (WCAG 1.4.3).
+ *
+ * axe mesure le contraste de ce qui est rendu, mais seulement sur les écrans
+ * que l'e2e ouvre, et dans le thème qu'il y trouve. La palette, elle, est
+ * repeinte à la main par chaque application à sa naissance : trois apps du
+ * parc sont passées sous AA en changeant leur primaire, sans qu'une suite le
+ * voie (primaire-du-socle-sous-aa). Ces paires sont celles que les composants
+ * du socle emploient : texte et texte doux sur les trois fonds, primaire en
+ * lien, encre sur un bouton primaire, et les trois couleurs d'état.
+ */
+const FONDS = ['--dwc-bg', '--dwc-surface', '--dwc-surface-2'];
+const PAIRES_TEXTE: [string, string[]][] = [
+  ['--dwc-text', FONDS],
+  ['--dwc-text-soft', FONDS],
+  ['--dwc-primary', ['--dwc-bg', '--dwc-surface']],
+  ['--dwc-primary-contrast', ['--dwc-primary']],
+  ['--dwc-danger', ['--dwc-bg', '--dwc-surface']],
+  ['--dwc-success', ['--dwc-bg', '--dwc-surface']],
+  ['--dwc-warning', ['--dwc-bg', '--dwc-surface']],
+];
+
+describe('index.css - le texte sur ses fonds', () => {
+  for (const [theme, table] of [
+    ['clair', CLAIR],
+    ['sombre', SOMBRE],
+  ] as const) {
+    it.each(PAIRES_TEXTE)(`${theme} : %s à 4,5:1`, (encre, fonds) => {
+      const avant = table.get(encre) ?? '';
+      expect(avant, encre).toMatch(/^#[0-9a-f]{6}$/i);
+      for (const fond of fonds) {
+        const arriere = table.get(fond) ?? '';
+        expect(arriere, fond).toMatch(/^#[0-9a-f]{6}$/i);
+        expect(
+          contraste(avant, arriere),
+          `${encre} sur ${fond}`
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    });
+  }
+});
