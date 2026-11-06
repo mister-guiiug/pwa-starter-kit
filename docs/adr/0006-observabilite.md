@@ -30,6 +30,17 @@ Le bundle d'une application sans observabilité reste intact — c'est vérifiab
 au budget de poids. Une application qui pose son DSN gagne le relais sans
 changer une ligne de code.
 
+**Rectifié le 06/11/2026 : cette promesse ne tenait pas.** `initSentry` était
+appelé sans `loader`, et `@sentry/react` n'était pas déclaré. Le socle importe
+alors le SDK par un nom que Vite ne peut pas lire ; dans le navigateur l'import
+échoue, l'échec est avalé, et rien ne part, DSN posé ou non. Le déploiement, la
+CSP et l'écran Réglages annonçaient pourtant un Sentry en service. Le squelette
+passe désormais `loader: () => import('@sentry/react')` et range le SDK dans un
+morceau à part (`vite.config.ts`) : sans DSN, rien n'est téléchargé ; avec, le
+morceau arrive après le premier rendu, hors du précache. Le budget `totalGzipKb`
+le compte, puisqu'il est émis ; `preloadGzipKb`, qui mesure ce que télécharge
+le premier affichage, ne bouge pas.
+
 Le journal local garde les cinquante dernières erreurs dans `localStorage`,
 piles comprises. **Tout script exécuté sur l'origine peut les lire** : n'y
 placer aucun contexte sensible. C'est écrit dans la politique de sécurité du

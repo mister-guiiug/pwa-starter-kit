@@ -3,7 +3,12 @@ import { VitePWA } from 'vite-plugin-pwa';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { pwaBaseOptions } from '@mister-guiiug/dev-pwa-config/vite-pwa';
+import {
+  pwaBaseOptions,
+  sentryChunkFileNames,
+  sentryChunkGroups,
+  withoutSentryPreload,
+} from '@mister-guiiug/dev-pwa-config/vite-pwa';
 import {
   pwaSeoPlugin,
   spaFallbackPlugin,
@@ -49,7 +54,23 @@ export default defineConfig(({ command }) => {
     // `strictPort` : un port pris fait échouer le démarrage, au lieu de glisser
     // en silence vers un autre que `.claude/launch.json` ne connaît pas.
     server: { port: devPortOf(APP_ID, 5240), strictPort: true },
-    build: { sourcemap: true },
+    // LE MORCEAU SENTRY, À PART : les trois gestes que le socle a promus de
+    // dix-huit apps (`vite-pwa.js`, « LE MORCEAU SENTRY »). Un nom fixe, pour
+    // qu'une coquille précachée ne demande pas une URL qu'un déploiement a
+    // supprimée ; hors des préchargements de l'entrée ; et React rangé dans
+    // son propre morceau, sinon il part dans `sentry.js`, que le précache
+    // exclut, et l'app ne démarre plus hors ligne (constaté sur trois apps le
+    // 05/11/2026). Le précache, lui, l'écarte déjà par `pwaBaseOptions`.
+    build: {
+      sourcemap: true,
+      modulePreload: { resolveDependencies: withoutSentryPreload },
+      rolldownOptions: {
+        output: {
+          codeSplitting: { groups: sentryChunkGroups() },
+          chunkFileNames: sentryChunkFileNames,
+        },
+      },
+    },
     plugins: [
       react(),
       tailwindcss(),
@@ -63,6 +84,11 @@ export default defineConfig(({ command }) => {
         siteName: 'PWA Starter Kit',
         logoPath: '/icons/icon-512.png',
         themeColor: { light: '#f7f8fa', dark: '#0f1115' },
+        // Le script qui applique le thème AVANT le premier rendu, avec la clé
+        // de `ThemeProvider` (`dwc_theme`). Sans lui, `index.html` le disait
+        // posé et il ne l'était pas : un visiteur en sombre voyait un flash
+        // clair à chaque démarrage à froid, le temps que React charge.
+        themeBoot: true,
       }),
 
       // `frame-ancestors` est volontairement absent : la spécification
@@ -104,6 +130,11 @@ export default defineConfig(({ command }) => {
       VitePWA(
         pwaBaseOptions({
           id: APP_ID,
+          // La base RÉELLE du build. Sans elle, le socle la déduit de `id`
+          // (`/pwa-starter-kit/`) : juste en production, faux pour les builds
+          // e2e et Lighthouse servis à la racine, dont la portée, le
+          // `start_url` et le repli de navigation visaient un chemin absent.
+          basePath,
           name: 'PWA Starter Kit',
           shortName: 'Starter Kit',
           description:

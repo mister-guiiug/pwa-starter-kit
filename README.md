@@ -203,15 +203,18 @@ C'est la seule différence qui compte.
 la met à votre nom :
 
 ```bash
-npx github:mister-guiiug/create-lg-pwa-app miss-exemple --publish
+npx --allow-git=root github:mister-guiiug/create-lg-pwa-app miss-exemple --publish
 ```
 
-**Sans `--from`, il ne part pas de ce que décrit ce README**, mais de la
-dernière étiquette du squelette : `v1.2.0`, posée le 06/09/2026, soixante-six
-commits derrière `main` au 28/09. Elle est sur le socle 4 et ses workflows
-`@v4`, n'a ni l'annulation des suppressions, ni la suppression de compte, ni la
-file hors ligne, ni la mesure d'audience, et rend encore le pied de page dans
-la coquille. `--from main` part de la pointe.
+`--allow-git=root` se place AVANT le paquet : depuis npm 12, `allow-git` vaut
+`none` par défaut et `npx github:` échoue en `EALLOWGIT` ; `root` n'ouvre que
+le générateur.
+
+**Sans `--from`, il ne part pas de ce que décrit ce README**, mais de la plus
+haute étiquette du squelette (create-lg-pwa-app#26), qui peut avoir des
+semaines de retard sur `main` : `git tag --sort=-v:refname | head -1` la donne.
+`--from main` part de la pointe. Ce paragraphe ne cite plus de numéro : il
+annonçait `v1.2.0` alors que le générateur tirait déjà `v1.3.0`.
 
 [`create-lg-pwa-app`](https://github.com/mister-guiiug/create-lg-pwa-app)
 substitue l'identifiant, le nom affiché et le nom court « Starter Kit », qui

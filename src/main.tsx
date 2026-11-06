@@ -35,6 +35,14 @@ installErrorReporter();
 void initSentry({
   dsn: env.VITE_SENTRY_DSN,
   environment: import.meta.env.MODE,
+  // LE `loader` N'EST PAS FACULTATIF. Sans lui, le socle importe Sentry par
+  // un nom que Vite ne peut pas lire (pour qu'une app sans le SDK construise
+  // quand même) : dans le navigateur l'import échoue, `initSentry` avale
+  // l'échec, et rien ne part, DSN posé ou non. C'était le cas ici jusqu'au
+  // 06/11/2026, alors que la CSP, le déploiement et l'écran Réglages
+  // annonçaient un Sentry en service. Le morceau qu'il charge est rangé à
+  // part par `vite.config.ts` ; sans DSN, rien n'est téléchargé.
+  loader: () => import('@sentry/react'),
 });
 
 const container = document.getElementById('app');

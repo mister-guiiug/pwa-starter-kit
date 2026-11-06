@@ -29,9 +29,10 @@
   },
   "bundleBudget": {
     "_pourquoi": "REPOSÉ À LA MARGE QUE LA RÈGLE DEMANDE, le 20/09/2026. Les trois bornes étaient à 0,2 à 0,6 % du poids mesuré — 479 kB sous 480, 261,0 sous 262, 159,0 sous 160 — alors que le bin qui les vérifie dit « un budget se pose à poids courant + marge », marge 10 % par défaut, et que `pwa-doctor` répète « poser le budget à +10 % ». Une marge d'un kilo-octet ne mesure plus rien : elle fait rougir LA CI DU SOCLE, qui construit ce squelette sur le paquet candidat à chaque PR, dès qu'un composant partagé gagne une ligne. Arrivé le 20/09 avec `BottomNav navigate` et `items[].load` (dev-pwa-config#326) : +1 kB brut sur le morceau principal, +0,4 kB gzip au total, et une borne rouge pour la fonctionnalité que ce squelette est justement là pour montrer. Les valeurs ci-dessous sont le relevé EN CI de `main` (run 35510079498 : 261,0 / 159,0 / 479) porté à +10 % et arrondi au kilo-octet supérieur — la formule de `pwa-bundle-budget` elle-même. MESURER EN CI, PAS EN LOCAL : gh run view <id> -R mister-guiiug/pwa-starter-kit --log | grep 'TOTAL gzip'. LE COÛT DE POSTHOG RESTE DIT, et c'est pour ça que la troisième borne existe : `totalGzipKb` additionne TOUT le JS émis, morceaux différés compris, et `posthog-js` (48,9 kB gzip — l'entrée `module.slim.js` et non l'entrée par défaut, 48,7 kB économisés) est chargé par le `loader` d'`App.tsx` APRÈS l'accord : un visiteur qui refuse ne le télécharge jamais. `preloadGzipKb` mesure ce que `dist/index.html` référence vraiment, et lui ne bouge pas avec PostHog.",
-    "totalGzipKb": 288,
-    "preloadGzipKb": 175,
-    "mainChunkKb": 527
+    "totalGzipKb": 461,
+    "preloadGzipKb": 187,
+    "mainChunkKb": 547,
+    "_releve": "REPOSÉ LE 06/11/2026, QUAND SENTRY A ÉTÉ BRANCHÉ POUR DE VRAI. Jusque-là `initSentry` était appelé sans `loader` ni `@sentry/react` : rien ne partait, et le total ne comptait pas le SDK. Il le compte désormais : 146,8 kB gzip dans `sentry.js`, morceau chargé seulement quand un DSN est posé, hors du précache et hors des préchargements. D'où un total de 418,9 kB pour un chemin critique presque inchangé. React passe dans son propre morceau (`sentryChunkGroups`), préchargé avec le runtime de Rolldown : 169,1 kB préchargés contre 168,2. Les trois bornes sont le relevé (418,9 / 169,1 / 497, le même octet en local et en CI, le squelette n'ayant pas de backend) porté à +10 % et arrondi au kilo-octet supérieur. Avant ce relevé, la marge préchargée n'était plus que de 3,8 % au déploiement (168,6 / 175) : une application neuve naissait avec 6,4 kB de jeu."
   },
   "squelette": {
     "_pourquoi": "CE QUI NE PARLE QUE DU SQUELETTE NE NAÎT DANS AUCUNE APPLICATION. Le générateur recopie tout l'arbre et n'y change que les noms : miss-arcade et miss-holi-voyage, nées le 31/10/2026, servaient en accueil « C'est le squelette des applications de la famille » (content/accueil.md) et publiaient mot pour mot les trois guides de content/pages/, chacun se déclarant l'original par sa canonique. create-lg-pwa-app retire ce que liste `propres`, puis recopie `refusALaNaissance` dans pwaDoctor.refus : sans page de contenu, pwa-doctor --strict relève la dette seo-content-pages, et le premier build de l'application échouerait. Ce refus se signale de lui-même (refus-perime-seo-content-pages) dès que l'application publie sa première page. LA LISTE EST ICI, À CÔTÉ DES FICHIERS, ET NON DANS LE GÉNÉRATEUR : qui ajoute un guide au squelette voit la règle, et src/squelette.test.ts échoue s'il l'oublie — il exige que chaque page publiée et le texte d'accueil servi soient couverts, et que chaque entrée existe encore.",
@@ -74,6 +75,7 @@
     "vitest": "^5.1.0"
   },
   "dependencies": {
+    "@sentry/react": "^11.10.0",
     "@supabase/supabase-js": "^2.118.0",
     "lucide-react": "^1.68.0",
     "posthog-js": "^1.445.3",
