@@ -23,7 +23,7 @@ interface SyncStateProps {
  *  - **l'état**, en continu, par `SyncStatusBadge` du socle : « hors ligne »
  *    dès la coupure (avant même la première écriture retenue), « en attente
  *    (N) » pendant le rejeu, rien de spécial quand tout est passé. Ses
- *    libellés viennent de `react/labels`, déjà traduits en sept langues ;
+ *    libellés viennent du socle, déjà traduits (`labels` de `src/i18n`) ;
  *  - **le refus durable**, en bandeau, avec les deux seules suites possibles :
  *    réessayer — les lettres mortes repartent en tête de file, compteurs
  *    remis à zéro — ou abandonner, ce qui relit le serveur et fait
