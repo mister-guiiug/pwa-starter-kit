@@ -7,8 +7,9 @@
  * traduisant : la forme, elle, est vérifiée à la compilation.
  *
  * CE FICHIER NE CONTIENT PAS LES LIBELLÉS DES COMPOSANTS DU SOCLE (« Fermer »,
- * « Réessayer », « Retour »…). Ils vivent dans `react/labels`, en sept langues,
- * et `I18nProvider` pose `LabelsProvider` avec la locale courante tout seul.
+ * « Réessayer », « Retour »…). Ils vivent dans le socle (`react/labels-fr`,
+ * `react/labels-en`…), et `I18nProvider` pose `LabelsProvider` avec la locale
+ * courante tout seul — dans les langues passées à `labels` (`./index.ts`).
  * Les redéclarer ici, c'est le travail que sept apps ont fait dans huit
  * fichiers-pont d'environ quatre cents lignes, avant que le socle ne porte les
  * traductions.
