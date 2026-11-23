@@ -144,8 +144,8 @@ Ce que la variante apporte, tout est déjà là :
 
 | Pièce                                | Ce qu'elle règle                                                                                                                   |
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `supabase/migrations/0001…0005`      | `profiles`, rôles, RLS **deny-by-default** avec double verrou, le hook qui recopie le rôle dans le jeton, et `delete_my_account()` |
-| `supabase/tests/*.test.sql`          | trente et une assertions pgTAP : deux comptes ne se voient pas, le rôle arrive dans le jeton, un compte s'efface vraiment          |
+| `supabase/migrations/0001…0006`      | `profiles`, rôles, RLS **deny-by-default** avec double verrou, rôle dans le jeton, `delete_my_account()`, table du ping anti-pause |
+| `supabase/tests/*.test.sql`          | quarante assertions pgTAP : deux comptes ne se voient pas, le rôle est dans le jeton, un compte s'efface, le ping lit sans écrire  |
 | `supabase/config.toml`               | la pile locale, pour jouer migrations et tests depuis zéro (`pwa-supabase-test.yml`)                                               |
 | `src/backend/supabase.ts`            | l'adaptateur du seul port `notes` — les autres restent locaux ; `flowType: 'pkce'`                                                 |
 | `src/backend/queued-notes.ts`        | la file d'écritures hors ligne (`sync-queue` du socle) enveloppant ce port ; rien en mode local                                    |
@@ -170,9 +170,11 @@ build-env: |
 Les nommer aussi en `required-env` arrête le déploiement quand l'une manque.
 Puis la référence du projet en variable (`SUPABASE_PROJECT_ID` : elle est dans
 l'URL), deux secrets pour les migrations (`SUPABASE_ACCESS_TOKEN`,
-`SUPABASE_DB_PASSWORD`, par le propriétaire), et appliquer
-`supabase/keep-alive.sql`. Sans la table `keep_alive`, le ping du keep-alive
-répond 404 et le workflow rougit ; le projet s'endort quand même. La procédure
+`SUPABASE_DB_PASSWORD`, par le propriétaire). La table `keep_alive` du ping
+anti-pause n'est plus un geste à part : elle naît avec le schéma, par la
+migration `0006_keep_alive.sql`. Le script à appliquer à la main qu'on
+livrait avant elle a été oublié (miss-bonus-quest, 23/11/2026) : le ping
+répondait 404, et le projet se serait endormi quand même. La procédure
 complète, geste par geste et avec ses variantes, est dans
 [PARAMETRAGE.md](https://github.com/mister-guiiug/dev-pwa-config/blob/main/PARAMETRAGE.md)
 du socle.
@@ -259,8 +261,8 @@ Restent cinq gestes, que le générateur imprime et ne fait pas :
    `TODO traduire`.
 
 Pour une application Supabase, il imprime aussi ce qui manque en silence
-(variables, secrets, table `keep_alive`, adresse de retour du lien, hook de
-rôle), mais pas encore les lignes `build-env` décrites plus haut.
+(variables, secrets, adresse de retour du lien, hook de rôle), mais pas encore
+les lignes `build-env` décrites plus haut.
 
 À la main, la substitution n'est pas courte : `pwa-starter-kit` figure dans une
 dizaine de fichiers, dont la clé du stockage local (`src/backend/local.ts`) et

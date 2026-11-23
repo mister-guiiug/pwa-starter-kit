@@ -14,9 +14,10 @@
 # compris une variable, et c'est ce qui permet de respecter la règle de la
 # famille sans modifier le workflow appelé.
 #
-# Prérequis, et le premier est celui qu'on oublie : une table `keep_alive` doit
-# exister, sinon le ping répond 404 en silence (cf. `templates/supabase/keep-alive.sql`
-# du socle).
+# Prérequis : une table `keep_alive`, sinon le ping répond 404 en silence. Elle
+# naît par la migration `0006_keep_alive.sql`. Le script à appliquer à la main
+# qu'on livrait à la place a été oublié dans miss-bonus-quest, dont le premier
+# ping (23/11/2026) a rendu 404.
 name: Supabase keep-alive
 
 on:
